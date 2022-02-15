@@ -1,6 +1,6 @@
 import VisNetwork from "./components/VisNetwork/VisNetwork";
 import ButtonAppBar from "./components/AppAppBar/AppAppBar";
-import { Container, Stack } from "@mui/material";
+import { Button, Container, Stack } from "@mui/material";
 import { Box } from "@mui/system";
 import FileSelector from "./components/FileSelector/FileSelector";
 
@@ -21,8 +21,16 @@ const App = () => {
     <Box>
       <ButtonAppBar />
       <Stack>
-        <Container sx={{ p: "1rem" }}>
+        <Container
+          sx={{
+            p: "1rem",
+            display: "flex",
+            justifyContent: "space-evenly",
+            alignItems: "center",
+          }}
+        >
           <FileSelector setFileContent={setFileContent} />
+          <Button variant="contained">Xuất File</Button>
         </Container>
         <VisNetwork topology={topology} />
       </Stack>
