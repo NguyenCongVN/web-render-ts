@@ -7,33 +7,31 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Select from "../Select/Select";
-
+import { NodeProperties } from "../../utils/enums/NodeProperties";
+import { dataArrayUpdate } from "../CollapseInputText/CollapseInputText";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   properties: Record<string, string[]>[];
-  dataType: string;
+  property: NodeProperties;
 }
 
-export default function FormDialog({
-  open,
-  setOpen,
-  properties,
-  dataType,
-}: Props) {
+type DetailProperties = keyof dataArrayUpdate;
+
+export default function FormDialog({ open, property, setOpen }: Props) {
   const handleClose = () => {
     setOpen(false);
   };
 
-  return (
-    <div>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Nhập dữ liệu</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Nhập dữ liệu cho {dataType}
-          </DialogContentText>
+  const renderInput = (
+    properties: DetailProperties,
+    property: NodeProperties
+  ) => {
+    if (property === NodeProperties.Vulnerbilities) {
+      return (
+        <>
           <Select />
+          {properties}
           <TextField
             autoFocus
             margin="dense"
@@ -43,6 +41,18 @@ export default function FormDialog({
             fullWidth
             variant="standard"
           />
+        </>
+      );
+    }
+  };
+
+  return (
+    <div>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Nhập dữ liệu</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Nhập dữ liệu cho {property}</DialogContentText>
+          {renderInput( property)}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>

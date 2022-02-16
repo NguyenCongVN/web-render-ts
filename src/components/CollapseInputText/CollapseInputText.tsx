@@ -12,6 +12,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import { TextField } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import FormDialog from "../InputModal/FormDialog";
+import { NodeProperties } from "../../utils/enums/NodeProperties";
 
 export type dataRenderType =
   | IService[]
@@ -29,7 +30,7 @@ export type dataArrayUpdate =
 interface Props {
   data: dataRenderType;
   isCollapse?: boolean;
-  property: string;
+  property: NodeProperties;
   onChangeHandle?: (data: string) => void;
   onAddHandle?: (
     data: IService | INfsExport | INfsMounted | IVulnerbility
@@ -96,7 +97,7 @@ const CollapseInputText = ({
               console.log(formOpen);
             }}
             properties={[{ as: ["as21"] }]}
-            dataType={data[0]}
+            property={property}
           />
         )}
       </>
