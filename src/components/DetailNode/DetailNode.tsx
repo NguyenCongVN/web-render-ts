@@ -8,6 +8,17 @@ import { Box, Button, TextField } from "@mui/material";
 import { IHost } from "../../utils/interfaces/IHost";
 import { useEffect } from "react";
 
+import { IVulnerbility } from "../../utils/interfaces/IVulnerability";
+import { IService } from "../../utils/interfaces/IService";
+import { INfsExport } from "../../utils/interfaces/INfsExport";
+import { INfsMounted } from "../../utils/interfaces/INfsMounted";
+import CollapseInputText, {
+  dataArrayUpdate,
+  dataRenderType,
+} from "../CollapseInputText/CollapseInputText";
+
+import { NodeProperties } from "../../utils/enums/NodeProperties";
+
 interface NodeDetailProps {
   host: IHost | null | undefined;
   updateHost: (host: IHost) => void;
@@ -17,46 +28,100 @@ export default function DetailNode({ host, updateHost }: NodeDetailProps) {
   const [open, setOpen] = React.useState(true);
   const [label, setLabel] = React.useState("");
   const [ip, setIP] = React.useState("");
-  const [cve, setCve] = React.useState<string | null>(null);
-  const [nsf, setNsf] = React.useState<string | null>(null);
+  const [vulnerbilities, setVulnerbilities] = React.useState<IVulnerbility[]>(
+    []
+  );
+  const [nsfExportInfo, setNsfExportInfo] = React.useState<INfsExport[]>([]);
+  const [networkServices, setNetworkServices] = React.useState<IService[]>([]);
+
+  const [nfsMounts, setNfsMounts] = React.useState<INfsMounted[]>([]);
+
+  // Update to state Function
+  function UpdateLabel(label: string) {
+    setLabel(label);
+  }
+
+  function UpdateIP(ip: string) {
+    setIP(ip);
+  }
+
+  function AddVulnerbility(vulnerbility: IVulnerbility) {
+    setVulnerbilities([...vulnerbilities, vulnerbility]);
+  }
+
+  function AddNsfExportInformation(nsfInformation: INfsExport) {
+    setNsfExportInfo([...nsfExportInfo, nsfInformation]);
+  }
+
+  function AddNetworkService(networkService: IService) {
+    setNetworkServices([...networkServices, networkService]);
+  }
+
+  function AddNfsMounted(nfsMounted: INfsMounted) {
+    setNfsMounts([...nfsMounts, nfsMounted]);
+  }
+
+  function RemoveVulnerbility(vulnerbilityToRemove: IVulnerbility) {
+    vulnerbilities.filter((vulnerbility) => {
+      return vulnerbilityToRemove.id === vulnerbility.id;
+    });
+  }
+
+  function RemoveNsfExportInformation(nsfInformationToRemove: INfsExport) {
+    nsfExportInfo.filter((nsfInformation) => {
+      return nsfInformationToRemove.id === nsfInformation.id;
+    });
+  }
+
+  function RemoveNetworkService(networkServiceToRemove: IService) {
+    networkServices.filter((service) => {
+      return networkServiceToRemove.id === service.id;
+    });
+  }
+
+  function RemoveNfsMounted(nfsMountedToRemove: INfsMounted) {
+    nfsMounts.filter((nfsMounted) => {
+      return nfsMountedToRemove.id === nfsMounted.id;
+    });
+  }
 
   useEffect(() => {
     console.log(host);
     if (host) {
       setLabel(host.label.text);
+
       if (host.IP) {
         setIP(host.IP);
       } else {
         setIP("");
       }
-      if (host.CVE && host.CVE.length > 0) {
-        let cveString = "";
-        host.CVE.forEach((cve) => {
-          cveString = cve + ";" + cveString;
-        });
-        setCve(cveString);
+
+      if (host.Vulnerbilities) {
+        setVulnerbilities(host.Vulnerbilities);
       } else {
-        setCve("");
+        setVulnerbilities([]);
       }
 
-      if (host.NSF && host.NSF.length > 0) {
-        let nfsString = "";
-        host.NSF.forEach((nfs) => {
-          nfsString = nfs + ";" + nfsString;
-        });
-        setNsf(nfsString);
+      if (host.NSFExportInfo) {
+        setNsfExportInfo(host.NSFExportInfo);
       } else {
-        setNsf("");
+        setNsfExportInfo([]);
+      }
+
+      if (host.NSFMounted) {
+        setNfsMounts(host.NSFMounted);
+      } else {
+        setNfsMounts([]);
       }
     } else {
       setLabel("");
       setIP("");
-      setCve("");
-      setNsf("");
+      setVulnerbilities([]);
+      setNsfExportInfo([]);
+      setNfsMounts([]);
+      setNetworkServices([]);
     }
   }, [host]);
-
-  const propertiesList = ["Label", "IP Address", "CVE", "NSF"];
 
   const handleClick = () => {
     setOpen(!open);
@@ -94,61 +159,40 @@ export default function DetailNode({ host, updateHost }: NodeDetailProps) {
       }
     >
       <Collapse in={open} timeout="auto" unmountOnExit>
-        {host
-          ? propertiesList.map((property, index) => {
-              let value = "";
-              switch (property) {
-                case "Label":
-                  value = label;
-                  break;
-                case "IP Address":
-                  value = ip;
-                  break;
-                case "CVE":
-                  if (cve) {
-                    value = cve;
-                  }
-                  break;
-                case "NSF":
-                  if (nsf) {
-                    value = nsf;
-                  }
-                  break;
-                default:
-                  break;
-              }
-              return (
-                <ListItemButton key={index.toString()}>
-                  <TextField
-                    label={property}
-                    variant="standard"
-                    margin="none"
-                    fullWidth
-                    value={value}
-                    id={property}
-                    onChange={(e) => {
-                      switch (e.target.id) {
-                        case "Label":
-                          setLabel(e.target.value);
-                          break;
-                        case "IP Address":
-                          setIP(e.target.value);
-                          break;
-                        case "CVE":
-                          setCve(e.target.value);
-                          break;
-                        case "NSF":
-                          setNsf(e.target.value);
-                          break;
-                        default:
-                          break;
-                      }
-                    }}
-                  />
-                </ListItemButton>
-              );
-            })
-          : null}
+        <CollapseInputText
+          property={NodeProperties.Label}
+          data={label}
+          onChangeHandle={(label: dataRenderType) => {
+            if (typeof label == "string") {
+              UpdateLabel(label);
+            }
+          }}
+        />
+        <CollapseInputText
+          property={NodeProperties.IP}
+          data={ip}
+          onChangeHandle={(ip: dataRenderType) => {
+            if (typeof ip == "string") {
+              UpdateIP(ip);
+            }
+          }}
+        />
+
+        <CollapseInputText
+          property={NodeProperties.Vulnerbilities}
+          data={vulnerbilities}
+          onAddHandle={(vulnerbility: dataArrayUpdate) => {
+            if (vulnerbility.type === "IVulnerbility")
+              AddVulnerbility(vulnerbility);
+          }}
+          onRemoveHandle={(vulnerbility: dataArrayUpdate) => {
+            if (vulnerbility.type === "IVulnerbility") {
+              RemoveVulnerbility(vulnerbility);
+            }
+          }}
+          isCollapse
+        />
+
         {host ? (
           <Box sx={{ display: "flex", justifyContent: "end" }}>
             <Button
@@ -161,34 +205,6 @@ export default function DetailNode({ host, updateHost }: NodeDetailProps) {
               }}
               onClick={(e) => {
                 e.preventDefault();
-                if (host) {
-                  host.CVE = [];
-                  // Xử lý chuỗi CVE và NSF (CVE dạng number;number)
-                  if (cve && cve.length > 0) {
-                    cve.split(";").forEach((cve) => {
-                      if (cve !== "") {
-                        host.CVE.push(cve);
-                      }
-                    });
-                  }
-
-                  host.NSF = [];
-                  if (nsf && nsf.length > 0) {
-                    nsf?.split(";").forEach((nsf) => {
-                      host.NSF.push(nsf);
-                    });
-                  }
-
-                  // Lưu lại thông tin vào prop
-
-                  if (label) {
-                    host.label.text = label;
-                  }
-                  if (ip) {
-                    host.IP = ip;
-                  }
-                  updateHost(host);
-                }
               }}
             >
               Lưu lại

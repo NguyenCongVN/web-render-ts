@@ -81,7 +81,15 @@ const VisNetwork = ({ topology }: NetworkProps) => {
       nodes = [];
       hostDatas = [];
       topology.root.topology.nodes.forEach((node) => {
-        hostDatas.push(node as IHost);
+        let host = node as IHost;
+        if (node.symbol.indexOf("switch") > 0) {
+          host.IsSwitch = true;
+        }
+
+        if (node.symbol.indexOf("router") > 0) {
+          host.IsRouter = true;
+        }
+        hostDatas.push(host);
         nodes.push({
           id: node.node_id,
           label: node.label.text,
