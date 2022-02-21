@@ -13,31 +13,19 @@ import { TextField } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import FormDialog from "../InputModal/FormDialog";
 import { NodeProperties } from "../../utils/enums/NodeProperties";
-
-export type dataRenderType =
-  | IService[]
-  | INfsExport[]
-  | INfsMounted[]
-  | IVulnerbility[]
-  | string;
-
-export type dataArrayUpdate =
-  | IService
-  | INfsExport
-  | INfsMounted
-  | IVulnerbility;
+import { Service } from "../../utils/classes/Service";
+import { Vulnerbility } from "../../utils/classes/Vulnerbility";
+import { dataArrayUpdate, dataRenderType } from "../../utils/classes/Topology";
+import { useEffect, useState } from "react";
 
 interface Props {
   data: dataRenderType;
   isCollapse?: boolean;
   property: NodeProperties;
-  onChangeHandle?: (data: string) => void;
-  onAddHandle?: (
-    data: IService | INfsExport | INfsMounted | IVulnerbility
-  ) => void;
-  onRemoveHandle?: (
-    data: IService | INfsExport | INfsMounted | IVulnerbility
-  ) => void;
+  onChangeHandle?: (data: string) => void; // for handle change with ip and label
+  // for handle add and remove Vulnerbilities
+  onAddHandle?: (data: dataArrayUpdate) => void;
+  onRemoveHandle?: (data: dataArrayUpdate) => void;
 }
 
 const CollapseInputText = ({
@@ -45,10 +33,20 @@ const CollapseInputText = ({
   isCollapse,
   data,
   onChangeHandle,
+  onAddHandle,
+  onRemoveHandle,
 }: Props) => {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = useState(true);
 
-  const [formOpen, setFormOpen] = React.useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+
+  const [dataUpdate, setDateUpdate] = useState(data);
+
+  useEffect(() => {
+    if (data) {
+      setDateUpdate(data);
+    }
+  }, [data]);
 
   const handleClick = () => {
     setOpen(!open);
@@ -64,6 +62,26 @@ const CollapseInputText = ({
     }
   };
 
+  const renderForm = (nodeType: NodeProperties) => {
+    if (nodeType === NodeProperties.Vulnerbilities) {
+      return (
+        <FormDialog
+          open={formOpen}
+          setOpen={(open: boolean) => {
+            setFormOpen(open);
+            console.log(formOpen);
+          }}
+          property={property}
+          handleSave={(data: dataArrayUpdate) => {
+            if (onAddHandle) {
+              onAddHandle(data);
+            }
+          }}
+        />
+      );
+    }
+  };
+
   if (isCollapse) {
     return (
       <>
@@ -73,10 +91,10 @@ const CollapseInputText = ({
         </ListItemButton>
         <Collapse in={open} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            {typeof data !== "string" &&
+            {/* {typeof data !== "string" &&
               data.map((object) => {
                 return renderData(object);
-              })}
+              })} */}
             <ListItemButton
               sx={{ pl: 4 }}
               onClick={() => {
@@ -89,17 +107,7 @@ const CollapseInputText = ({
             </ListItemButton>
           </List>
         </Collapse>
-        {typeof data !== "string" && (
-          <FormDialog
-            open={formOpen}
-            setOpen={(open: boolean) => {
-              setFormOpen(open);
-              console.log(formOpen);
-            }}
-            properties={[{ as: ["as21"] }]}
-            property={property}
-          />
-        )}
+        {renderForm(property)}
       </>
     );
   }
@@ -111,9 +119,11 @@ const CollapseInputText = ({
           variant="standard"
           margin="none"
           fullWidth
-          value={data}
+          value={dataUpdate}
           id={property}
           onChange={(e) => {
+            console.log(dataUpdate);
+            setDateUpdate(e.target.value);
             if (onChangeHandle) {
               onChangeHandle(e.target.value);
             }

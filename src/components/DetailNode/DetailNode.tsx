@@ -12,116 +12,149 @@ import { IVulnerbility } from "../../utils/interfaces/IVulnerability";
 import { IService } from "../../utils/interfaces/IService";
 import { INfsExport } from "../../utils/interfaces/INfsExport";
 import { INfsMounted } from "../../utils/interfaces/INfsMounted";
-import CollapseInputText, {
-  dataArrayUpdate,
-  dataRenderType,
-} from "../CollapseInputText/CollapseInputText";
 
 import { NodeProperties } from "../../utils/enums/NodeProperties";
+import { dataArrayUpdate, dataRenderType } from "../../utils/classes/Topology";
+import CollapseInputText from "../CollapseInputText/CollapseInputText";
+import { Host } from "../../utils/classes/Host";
+import { Service } from "../../utils/classes/Service";
+import { Vulnerbility } from "../../utils/classes/Vulnerbility";
+import { NsfExport } from "../../utils/classes/NsfExport";
+import { NfsMounted } from "../../utils/classes/NsfMounted";
 
 interface NodeDetailProps {
-  host: IHost | null | undefined;
-  updateHost: (host: IHost) => void;
+  hostInput: Host | null | undefined;
+  updateHost: (host: Host) => void;
 }
 
-export default function DetailNode({ host, updateHost }: NodeDetailProps) {
+export default function DetailNode({ hostInput, updateHost }: NodeDetailProps) {
   const [open, setOpen] = React.useState(true);
-  const [label, setLabel] = React.useState("");
-  const [ip, setIP] = React.useState("");
-  const [vulnerbilities, setVulnerbilities] = React.useState<IVulnerbility[]>(
-    []
-  );
-  const [nsfExportInfo, setNsfExportInfo] = React.useState<INfsExport[]>([]);
-  const [networkServices, setNetworkServices] = React.useState<IService[]>([]);
 
-  const [nfsMounts, setNfsMounts] = React.useState<INfsMounted[]>([]);
+  // Lưu vào state
+  const [host, setHost] = React.useState<Host | null | undefined>(hostInput);
+
+  useEffect(() => {
+    console.log("effect");
+    setHost(hostInput);
+  }, [hostInput]);
 
   // Update to state Function
   function UpdateLabel(label: string) {
-    setLabel(label);
+    console.log("update label");
+    setHost((currentHost) => {
+      if (currentHost) {
+        let temp = currentHost;
+        temp.label.text = label;
+        return temp;
+      }
+      return currentHost;
+    });
   }
 
   function UpdateIP(ip: string) {
-    setIP(ip);
-  }
-
-  function AddVulnerbility(vulnerbility: IVulnerbility) {
-    setVulnerbilities([...vulnerbilities, vulnerbility]);
-  }
-
-  function AddNsfExportInformation(nsfInformation: INfsExport) {
-    setNsfExportInfo([...nsfExportInfo, nsfInformation]);
-  }
-
-  function AddNetworkService(networkService: IService) {
-    setNetworkServices([...networkServices, networkService]);
-  }
-
-  function AddNfsMounted(nfsMounted: INfsMounted) {
-    setNfsMounts([...nfsMounts, nfsMounted]);
-  }
-
-  function RemoveVulnerbility(vulnerbilityToRemove: IVulnerbility) {
-    vulnerbilities.filter((vulnerbility) => {
-      return vulnerbilityToRemove.id === vulnerbility.id;
+    setHost((currentHost) => {
+      if (currentHost) {
+        currentHost.IP = ip;
+      }
+      return currentHost;
     });
+  }
+
+  function AddVulnerbility(vulnerbilityToAdd: Vulnerbility) {
+    if (host) {
+      setHost((currentHost) => {
+        if (currentHost) {
+          currentHost.Vulnerbilities.push(vulnerbilityToAdd);
+        }
+        return currentHost;
+      });
+    }
+  }
+
+  function AddNsfExportInformation(nsfInformation: NsfExport) {
+    if (host) {
+      setHost((currentHost) => {
+        if (currentHost) {
+          currentHost.NSFExportInfo.push(nsfInformation);
+        }
+        return currentHost;
+      });
+    }
+  }
+
+  function AddNetworkService(networkService: Service) {
+    if (host) {
+      setHost((currentHost) => {
+        if (currentHost) {
+          currentHost.Services.push(networkService);
+        }
+        return currentHost;
+      });
+    }
+  }
+
+  function AddNfsMounted(nfsMounted: NfsMounted) {
+    if (host) {
+      setHost((currentHost) => {
+        if (currentHost) {
+          currentHost.NSFMounted.push(nfsMounted);
+        }
+        return currentHost;
+      });
+    }
+  }
+
+  function RemoveVulnerbility(vulnerbilityToRemove: Vulnerbility) {
+    if (host) {
+      setHost((currentHost) => {
+        if (currentHost) {
+          currentHost.Vulnerbilities.filter((vulnerbility) => {
+            return vulnerbilityToRemove.id === vulnerbility.id;
+          });
+        }
+        return currentHost;
+      });
+    }
   }
 
   function RemoveNsfExportInformation(nsfInformationToRemove: INfsExport) {
-    nsfExportInfo.filter((nsfInformation) => {
-      return nsfInformationToRemove.id === nsfInformation.id;
-    });
+    if (host) {
+      setHost((currentHost) => {
+        if (currentHost) {
+          currentHost.Vulnerbilities.filter((nsfInformation) => {
+            return nsfInformationToRemove.id === nsfInformation.id;
+          });
+        }
+        return currentHost;
+      });
+    }
   }
 
   function RemoveNetworkService(networkServiceToRemove: IService) {
-    networkServices.filter((service) => {
-      return networkServiceToRemove.id === service.id;
-    });
+    if (host) {
+      setHost((currentHost) => {
+        if (currentHost) {
+          currentHost.Services.filter((service) => {
+            return networkServiceToRemove.id === service.id;
+          });
+        }
+        return currentHost;
+      });
+    }
   }
 
   function RemoveNfsMounted(nfsMountedToRemove: INfsMounted) {
-    nfsMounts.filter((nfsMounted) => {
-      return nfsMountedToRemove.id === nfsMounted.id;
-    });
-  }
-
-  useEffect(() => {
-    console.log(host);
     if (host) {
-      setLabel(host.label.text);
-
-      if (host.IP) {
-        setIP(host.IP);
-      } else {
-        setIP("");
-      }
-
-      if (host.Vulnerbilities) {
-        setVulnerbilities(host.Vulnerbilities);
-      } else {
-        setVulnerbilities([]);
-      }
-
-      if (host.NSFExportInfo) {
-        setNsfExportInfo(host.NSFExportInfo);
-      } else {
-        setNsfExportInfo([]);
-      }
-
-      if (host.NSFMounted) {
-        setNfsMounts(host.NSFMounted);
-      } else {
-        setNfsMounts([]);
-      }
-    } else {
-      setLabel("");
-      setIP("");
-      setVulnerbilities([]);
-      setNsfExportInfo([]);
-      setNfsMounts([]);
-      setNetworkServices([]);
+      setHost((currentHost) => {
+        if (currentHost) {
+          currentHost.Services.filter((nfsMounted) => {
+            return nfsMountedToRemove.id === nfsMounted.id;
+          });
+        }
+        return currentHost;
+      });
     }
-  }, [host]);
+  }
 
   const handleClick = () => {
     setOpen(!open);
@@ -161,26 +194,27 @@ export default function DetailNode({ host, updateHost }: NodeDetailProps) {
       <Collapse in={open} timeout="auto" unmountOnExit>
         <CollapseInputText
           property={NodeProperties.Label}
-          data={label}
+          data={host ? host.label.text : ""}
           onChangeHandle={(label: dataRenderType) => {
             if (typeof label == "string") {
+              console.log(host);
+              console.log("Detail Node");
               UpdateLabel(label);
             }
           }}
         />
         <CollapseInputText
           property={NodeProperties.IP}
-          data={ip}
+          data={host ? host.IP : ""}
           onChangeHandle={(ip: dataRenderType) => {
             if (typeof ip == "string") {
               UpdateIP(ip);
             }
           }}
         />
-
         <CollapseInputText
           property={NodeProperties.Vulnerbilities}
-          data={vulnerbilities}
+          data={host ? host.Vulnerbilities : []}
           onAddHandle={(vulnerbility: dataArrayUpdate) => {
             if (vulnerbility.type === "IVulnerbility")
               AddVulnerbility(vulnerbility);

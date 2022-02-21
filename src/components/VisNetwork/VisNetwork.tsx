@@ -5,30 +5,35 @@ import { Topology } from "../../utils/classes/Topology";
 import { Container, Typography } from "@mui/material";
 import DetailNode from "../DetailNode/DetailNode";
 import { IHost } from "../../utils/interfaces/IHost";
-import { Link, Node2 } from "../../utils/interfaces/ITopology";
 import AlertDialog from "../AlertModal/AlertModal";
+import { Host } from "../../utils/classes/Host";
+import { Link } from "../../utils/classes/Link";
 
 interface NetworkProps {
-  topology: Topology | null;
+  topologyInput: Topology | undefined;
 }
 
-const VisNetwork = ({ topology }: NetworkProps) => {
-  const [selectedHost, setSelectedHost] = useState<IHost | null | undefined>(
+const VisNetwork = ({ topologyInput }: NetworkProps) => {
+  const [selectedHost, setSelectedHost] = useState<Host | null | undefined>(
     null
   );
 
   const [isUpdateSuccess, setIsUpdateSuccess] = useState<boolean>(false);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
+  const [topology, setTopology] = useState<Topology | undefined>(topologyInput);
+
+  useEffect(() => {
+    if (topologyInput) {
+      setTopology(topologyInput);
+    }
+  }, [topologyInput]);
+
   // A reference to the div rendered by this component
   const domNode = useRef<HTMLDivElement>(null);
 
   // A reference to the vis network instance
   let network = useRef<Network | null>(null);
-
-  let hostDatas: IHost[] = [];
-
-  let linkDatas: Link[] = [];
 
   let nodes: Node[] = [
     { id: 1, label: "Node 1", shape: "image", image: "" },
@@ -52,61 +57,56 @@ const VisNetwork = ({ topology }: NetworkProps) => {
 
   const options: Options = {};
 
-  function getNodeFromId(id: string): undefined | IHost {
-    if (hostDatas.length > 0) {
-      return hostDatas.find((node) => node.node_id === id) as IHost;
-    } else {
-      return undefined;
-    }
-  }
-
-  function updateHost(hostToUpdate: IHost): void {
-    setIsUpdateSuccess(false);
-    setIsUpdating(true);
-    console.log(hostToUpdate);
-    if (hostDatas.length > 0) {
-      for (let i = 0; i < hostDatas.length; i++) {
-        if (hostDatas[i].node_id === hostToUpdate.node_id) {
-          hostDatas[i] = hostToUpdate;
-          setIsUpdateSuccess(true);
-          setIsUpdating(false);
-          break;
-        }
+  function getNodeFromId(id: string): undefined | Host {
+    if (topology) {
+      if (topology.nodes.length > 0) {
+        return topology.nodes.find((host) => host.node_id === id);
+      } else {
+        return undefined;
       }
     }
   }
 
+  function updateHost(hostToUpdate: Host): void {
+    setIsUpdateSuccess(false);
+    setIsUpdating(true);
+    setTopology((currentTopology) => {
+      if (currentTopology) {
+        if (currentTopology.nodes.length > 0) {
+          for (let i = 0; i < currentTopology.nodes.length; i++) {
+            if (currentTopology.nodes[i].node_id === hostToUpdate.node_id) {
+              currentTopology.nodes[i] = hostToUpdate;
+              setIsUpdateSuccess(true);
+              setIsUpdating(false);
+              break;
+            }
+          }
+          return currentTopology;
+        }
+      }
+    });
+  }
+
   useEffect(() => {
     if (topology) {
+      //  Chuyển từ topology sang dạng data format vis network
       nodes = [];
-      hostDatas = [];
-      topology.root.topology.nodes.forEach((node) => {
-        let host = node as IHost;
-        if (node.symbol.indexOf("switch") > 0) {
-          host.IsSwitch = true;
-        }
-
-        if (node.symbol.indexOf("router") > 0) {
-          host.IsRouter = true;
-        }
-        hostDatas.push(host);
+      topology.nodes.forEach((host) => {
         nodes.push({
-          id: node.node_id,
-          label: node.label.text,
+          id: host.node_id,
+          label: host.label.text,
           shape: "image",
-          image: `${process.env.PUBLIC_URL}/assets${node.symbol.substring(
+          image: `${process.env.PUBLIC_URL}/assets${host.symbol.substring(
             1,
-            node.symbol.length
+            host.symbol.length
           )}`,
-          x: node.x,
-          y: node.y,
-          size: (node.height / node.width) * 20,
+          x: host.x,
+          y: host.y,
+          size: (host.height / host.width) * 20,
         });
       });
       edges = [];
-      linkDatas = [];
-      topology.root.topology.links.forEach((link) => {
-        linkDatas.push(link as Link);
+      topology.links.forEach((link) => {
         edges.push({
           id: link.link_id,
           from: link.nodes[0].node_id,
@@ -159,8 +159,10 @@ const VisNetwork = ({ topology }: NetworkProps) => {
               zIndex: 1000,
             }}
           >
-            <DetailNode host={selectedHost} updateHost={updateHost} />
+            <DetailNode hostInput={selectedHost} updateHost={updateHost} />
           </Box>
+
+          {/* Box to render Network */}
           <Box ref={domNode} style={{ height: "80vh" }}></Box>
         </Box>
       ) : (

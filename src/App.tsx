@@ -10,7 +10,7 @@ import { Topology } from "./utils/classes/Topology";
 import { useEffect, useState } from "react";
 const App = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);
-  const [topology, setTopology] = useState<Topology | null>(null);
+  const [topology, setTopology] = useState<Topology | undefined>(undefined);
 
   useEffect(() => {
     if (fileContent) {
@@ -32,7 +32,7 @@ const App = () => {
           <FileSelector setFileContent={setFileContent} />
           <Button variant="contained">Xuất File</Button>
         </Container>
-        <VisNetwork topology={topology} />
+        <VisNetwork topologyInput={topology} />
       </Stack>
     </Box>
   );

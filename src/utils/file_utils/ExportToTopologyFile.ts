@@ -1,4 +1,3 @@
-import { IHost } from "../interfaces/IHost";
-import { Link } from "../interfaces/ITopology";
+import { Topology } from "../classes/Topology";
 
-export const ExportToTopologyFile = (hosts: IHost[], links: Link[]) => {};
+export const ExportToTopologyFile = (topology: Topology) => {};
