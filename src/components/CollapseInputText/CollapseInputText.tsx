@@ -9,7 +9,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import { TextField } from "@mui/material";
+import { IconButton, TextField, Tooltip } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import FormDialog from "../InputModal/FormDialog";
 import { NodeProperties } from "../../utils/enums/NodeProperties";
@@ -22,6 +22,7 @@ import { useDispatch } from "react-redux";
 import { updateDraftHostPending } from "../../redux/action-creators/Host.creators";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { hostActionCreators } from "../../redux";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface Props {
   data: Host;
@@ -61,6 +62,11 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
       return data.Vulnerbilities.map((vulnerbility) => (
         <ListItemButton sx={{ pl: 4 }}>
           <ListItemText primary={vulnerbility.vulExist.cve} />
+          <Tooltip title="Delete">
+            <IconButton>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
         </ListItemButton>
       ));
     }
@@ -131,6 +137,8 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
               if (property === NodeProperties.Label) {
                 setHostToUpdate((currentHost) => {
                   let temp = currentHost.slice();
+                  temp[0].IP = "123";
+                  console.log(temp[0] === currentHost[0]);
                   temp[0].label.text = e.target.value;
                   return temp;
                 });

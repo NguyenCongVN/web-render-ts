@@ -2,7 +2,7 @@ import { Host } from "../../utils/classes/Host";
 import { HostActionTypes } from "../action-types/Host.types";
 import { HostAction } from "../actions/Host.actions";
 
-interface HostState {
+export interface HostState {
   hosts: Host[];
   draftHosts: Host[];
   isUpdateSuccess: boolean;
@@ -91,8 +91,30 @@ const hostsReducer = (
         isUpdateSuccess: true,
         isUpdating: false,
         isUpdateFailed: false,
+        hosts: action.payload,
       };
     case HostActionTypes.ADD_VULNERBILITY_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
+    case HostActionTypes.REMOVE_VULNERBILITY_PENDING:
+      return {
+        ...state,
+        isUpdating: true,
+        isUpdateFailed: false,
+        isUpdateSuccess: false,
+      };
+    case HostActionTypes.REMOVE_VULNERBILITY_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.REMOVE_VULNERBILITY_FAILED:
       return {
         ...state,
         isUpdateSuccess: false,

@@ -1,6 +1,9 @@
 import { Host } from "../../utils/classes/Host";
 import { HostActionTypes } from "../action-types/Host.types";
-import { AddVulnerbilityPayload } from "../payload-types/HostPayloadTypes";
+import {
+  AddVulnerbilityPayload,
+  RemoveVulnerbilityPayload,
+} from "../payload-types/HostPayloadTypes";
 export interface SetHostsAction {
   type: HostActionTypes.SET_HOSTS;
   payload: Host[];
@@ -57,6 +60,20 @@ export interface AddVulnerbilityFailedAction {
   type: HostActionTypes.ADD_VULNERBILITY_FAILED;
 }
 
+export interface RemoveVulnerbilityPendingAction {
+  type: HostActionTypes.REMOVE_VULNERBILITY_PENDING;
+  payload: RemoveVulnerbilityPayload;
+}
+
+export interface RemoveVulnerbilitySuccessAction {
+  type: HostActionTypes.REMOVE_VULNERBILITY_SUCCESS;
+  payload: Host[];
+}
+
+export interface RemoveVulnerbilityFailedAction {
+  type: HostActionTypes.REMOVE_VULNERBILITY_FAILED;
+}
+
 export type HostAction =
   | SetHostsAction
   | SetDraftHostAction
@@ -69,4 +86,7 @@ export type HostAction =
   | ToogleOpenAlert
   | AddVulnerbilityPendingAction
   | AddVulnerbilitySuccessAction
-  | AddVulnerbilityFailedAction;
+  | AddVulnerbilityFailedAction
+  | RemoveVulnerbilityPendingAction
+  | RemoveVulnerbilitySuccessAction
+  | RemoveVulnerbilityFailedAction;

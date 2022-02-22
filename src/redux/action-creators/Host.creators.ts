@@ -6,7 +6,10 @@ import {
   AddVulnerbilityPendingAction,
   AddVulnerbilitySuccessAction,
 } from "../actions/Host.actions";
-import { AddVulnerbilityPayload } from "../payload-types/HostPayloadTypes";
+import {
+  AddVulnerbilityPayload,
+  RemoveVulnerbilityPayload,
+} from "../payload-types/HostPayloadTypes";
 export const setHosts = (hosts: Host[]) => {
   return {
     type: HostActionTypes.SET_HOSTS,
@@ -83,5 +86,26 @@ export const addVulnerbilitySuccess = (payload: Host[]) => {
 export const addVulnerbilityFailed = () => {
   return {
     type: HostActionTypes.ADD_VULNERBILITY_FAILED,
+  };
+};
+
+export const removeVulnerbilityPending = (
+  payload: RemoveVulnerbilityPayload
+) => {
+  return {
+    type: HostActionTypes.REMOVE_VULNERBILITY_PENDING,
+    payload: payload,
+  };
+};
+export const removeVulnerbilitySuccess = (payload: Host[]) => {
+  return {
+    type: HostActionTypes.REMOVE_VULNERBILITY_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const removeVulnerbilityFailed = () => {
+  return {
+    type: HostActionTypes.REMOVE_VULNERBILITY_FAILED,
   };
 };
