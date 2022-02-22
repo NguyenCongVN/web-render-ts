@@ -15,36 +15,39 @@ import FormDialog from "../InputModal/FormDialog";
 import { NodeProperties } from "../../utils/enums/NodeProperties";
 import { Service } from "../../utils/classes/Service";
 import { Vulnerbility } from "../../utils/classes/Vulnerbility";
-import { dataArrayUpdate, dataRenderType } from "../../utils/classes/Topology";
+import { dataRenderType } from "../../utils/classes/Topology";
 import { useEffect, useState } from "react";
+import { Host } from "../../utils/classes/Host";
+import { useDispatch } from "react-redux";
+import { updateDraftHostPending } from "../../redux/action-creators/Host.creators";
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { hostActionCreators } from "../../redux";
 
 interface Props {
-  data: dataRenderType;
+  data: Host;
   isCollapse?: boolean;
   property: NodeProperties;
-  onChangeHandle?: (data: string) => void; // for handle change with ip and label
-  // for handle add and remove Vulnerbilities
-  onAddHandle?: (data: dataArrayUpdate) => void;
-  onRemoveHandle?: (data: dataArrayUpdate) => void;
 }
 
-const CollapseInputText = ({
-  property,
-  isCollapse,
-  data,
-  onChangeHandle,
-  onAddHandle,
-  onRemoveHandle,
-}: Props) => {
+const CollapseInputText = ({ property, isCollapse, data }: Props) => {
+  const dispatch = useDispatch();
+
+  const { updateDraftHostPending } = bindActionCreators(
+    hostActionCreators,
+    dispatch
+  );
+
   const [open, setOpen] = useState(true);
 
   const [formOpen, setFormOpen] = useState(false);
 
-  const [dataUpdate, setDateUpdate] = useState(data);
+  const [hostToUpdate, setHostToUpdate] = useState([data]);
 
   useEffect(() => {
     if (data) {
-      setDateUpdate(data);
+      console.log(data);
+      console.log(property);
+      setHostToUpdate([data]);
     }
   }, [data]);
 
@@ -52,34 +55,37 @@ const CollapseInputText = ({
     setOpen(!open);
   };
 
-  const renderData = (data: dataArrayUpdate) => {
-    if (data.type === "IVulnerbility") {
-      return (
+  // CVE button render -> show to edit
+  const renderData = (data: Host) => {
+    if (property === NodeProperties.Vulnerbilities) {
+      return data.Vulnerbilities.map((vulnerbility) => (
         <ListItemButton sx={{ pl: 4 }}>
-          <ListItemText primary={data.vulExist.cve} />
+          <ListItemText primary={vulnerbility.vulExist.cve} />
         </ListItemButton>
-      );
+      ));
+    }
+
+    if (property === NodeProperties.networkServiceInfo) {
+      return data.Services.map((service) => (
+        <ListItemButton sx={{ pl: 4 }}>
+          <ListItemText primary={service.service} />
+        </ListItemButton>
+      ));
     }
   };
 
-  const renderForm = (nodeType: NodeProperties) => {
-    if (nodeType === NodeProperties.Vulnerbilities) {
-      return (
-        <FormDialog
-          open={formOpen}
-          setOpen={(open: boolean) => {
-            setFormOpen(open);
-            console.log(formOpen);
-          }}
-          property={property}
-          handleSave={(data: dataArrayUpdate) => {
-            if (onAddHandle) {
-              onAddHandle(data);
-            }
-          }}
-        />
-      );
-    }
+  // Form to add and edit
+  const renderForm = () => {
+    return (
+      <FormDialog
+        open={formOpen}
+        setOpen={(open: boolean) => {
+          setFormOpen(open);
+        }}
+        property={property} // use property to check type to render
+        host={hostToUpdate[0]}
+      />
+    );
   };
 
   if (isCollapse) {
@@ -91,15 +97,11 @@ const CollapseInputText = ({
         </ListItemButton>
         <Collapse in={open} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            {/* {typeof data !== "string" &&
-              data.map((object) => {
-                return renderData(object);
-              })} */}
+            {renderData(data)}
             <ListItemButton
               sx={{ pl: 4 }}
               onClick={() => {
                 setFormOpen(!formOpen);
-                console.log(formOpen);
               }}
             >
               <Add />
@@ -107,31 +109,47 @@ const CollapseInputText = ({
             </ListItemButton>
           </List>
         </Collapse>
-        {renderForm(property)}
+        {renderForm()}
+      </>
+    );
+  } else {
+    return (
+      <>
+        <ListItemButton sx={{ marginBottom: "2px" }}>
+          <TextField
+            label={property}
+            variant="standard"
+            margin="none"
+            fullWidth
+            value={
+              property === NodeProperties.Label
+                ? hostToUpdate[0].label.text
+                : hostToUpdate[0].IP
+            }
+            id={property}
+            onChange={(e) => {
+              if (property === NodeProperties.Label) {
+                setHostToUpdate((currentHost) => {
+                  let temp = currentHost.slice();
+                  temp[0].label.text = e.target.value;
+                  return temp;
+                });
+              }
+
+              if (property === NodeProperties.IP) {
+                setHostToUpdate((currentHost) => {
+                  let temp = currentHost.slice();
+                  temp[0].IP = e.target.value;
+                  return temp;
+                });
+              }
+              updateDraftHostPending(hostToUpdate[0]);
+            }}
+          />
+        </ListItemButton>
       </>
     );
   }
-  return (
-    <>
-      <ListItemButton sx={{ marginBottom: "2px" }}>
-        <TextField
-          label={property}
-          variant="standard"
-          margin="none"
-          fullWidth
-          value={dataUpdate}
-          id={property}
-          onChange={(e) => {
-            console.log(dataUpdate);
-            setDateUpdate(e.target.value);
-            if (onChangeHandle) {
-              onChangeHandle(e.target.value);
-            }
-          }}
-        />
-      </ListItemButton>
-    </>
-  );
 };
 
 export default CollapseInputText;

@@ -5,15 +5,22 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import { useDispatch } from "react-redux";
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { hostActionCreators } from "../../redux";
 
 interface AlertProps {
   open: boolean;
-  toogleOpen: () => void;
 }
 
-export default function AlertDialog({ open, toogleOpen }: AlertProps) {
+export default function AlertDialog({ open }: AlertProps) {
+  const dispatch = useDispatch();
+
+  const { ToogleOpenAlert } = bindActionCreators(hostActionCreators, dispatch);
+
   const handleClose = () => {
-    toogleOpen();
+    console.log(open);
+    ToogleOpenAlert();
   };
 
   return (

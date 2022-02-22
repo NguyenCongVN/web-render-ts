@@ -14,147 +14,25 @@ import { INfsExport } from "../../utils/interfaces/INfsExport";
 import { INfsMounted } from "../../utils/interfaces/INfsMounted";
 
 import { NodeProperties } from "../../utils/enums/NodeProperties";
-import { dataArrayUpdate, dataRenderType } from "../../utils/classes/Topology";
+import { dataRenderType } from "../../utils/classes/Topology";
 import CollapseInputText from "../CollapseInputText/CollapseInputText";
 import { Host } from "../../utils/classes/Host";
 import { Service } from "../../utils/classes/Service";
 import { Vulnerbility } from "../../utils/classes/Vulnerbility";
 import { NsfExport } from "../../utils/classes/NsfExport";
 import { NfsMounted } from "../../utils/classes/NsfMounted";
+import { useDispatch } from "react-redux";
 
 interface NodeDetailProps {
-  hostInput: Host | null | undefined;
-  updateHost: (host: Host) => void;
+  hostInput: Host | undefined;
 }
 
-export default function DetailNode({ hostInput, updateHost }: NodeDetailProps) {
+export default function DetailNode({ hostInput }: NodeDetailProps) {
+  // redux action
+
+  const dispatch = useDispatch();
+
   const [open, setOpen] = React.useState(true);
-
-  // Lưu vào state
-  const [host, setHost] = React.useState<Host | null | undefined>(hostInput);
-
-  useEffect(() => {
-    console.log("effect");
-    setHost(hostInput);
-  }, [hostInput]);
-
-  // Update to state Function
-  function UpdateLabel(label: string) {
-    console.log("update label");
-    setHost((currentHost) => {
-      if (currentHost) {
-        let temp = currentHost;
-        temp.label.text = label;
-        return temp;
-      }
-      return currentHost;
-    });
-  }
-
-  function UpdateIP(ip: string) {
-    setHost((currentHost) => {
-      if (currentHost) {
-        currentHost.IP = ip;
-      }
-      return currentHost;
-    });
-  }
-
-  function AddVulnerbility(vulnerbilityToAdd: Vulnerbility) {
-    if (host) {
-      setHost((currentHost) => {
-        if (currentHost) {
-          currentHost.Vulnerbilities.push(vulnerbilityToAdd);
-        }
-        return currentHost;
-      });
-    }
-  }
-
-  function AddNsfExportInformation(nsfInformation: NsfExport) {
-    if (host) {
-      setHost((currentHost) => {
-        if (currentHost) {
-          currentHost.NSFExportInfo.push(nsfInformation);
-        }
-        return currentHost;
-      });
-    }
-  }
-
-  function AddNetworkService(networkService: Service) {
-    if (host) {
-      setHost((currentHost) => {
-        if (currentHost) {
-          currentHost.Services.push(networkService);
-        }
-        return currentHost;
-      });
-    }
-  }
-
-  function AddNfsMounted(nfsMounted: NfsMounted) {
-    if (host) {
-      setHost((currentHost) => {
-        if (currentHost) {
-          currentHost.NSFMounted.push(nfsMounted);
-        }
-        return currentHost;
-      });
-    }
-  }
-
-  function RemoveVulnerbility(vulnerbilityToRemove: Vulnerbility) {
-    if (host) {
-      setHost((currentHost) => {
-        if (currentHost) {
-          currentHost.Vulnerbilities.filter((vulnerbility) => {
-            return vulnerbilityToRemove.id === vulnerbility.id;
-          });
-        }
-        return currentHost;
-      });
-    }
-  }
-
-  function RemoveNsfExportInformation(nsfInformationToRemove: INfsExport) {
-    if (host) {
-      setHost((currentHost) => {
-        if (currentHost) {
-          currentHost.Vulnerbilities.filter((nsfInformation) => {
-            return nsfInformationToRemove.id === nsfInformation.id;
-          });
-        }
-        return currentHost;
-      });
-    }
-  }
-
-  function RemoveNetworkService(networkServiceToRemove: IService) {
-    if (host) {
-      setHost((currentHost) => {
-        if (currentHost) {
-          currentHost.Services.filter((service) => {
-            return networkServiceToRemove.id === service.id;
-          });
-        }
-        return currentHost;
-      });
-    }
-  }
-
-  function RemoveNfsMounted(nfsMountedToRemove: INfsMounted) {
-    if (host) {
-      setHost((currentHost) => {
-        if (currentHost) {
-          currentHost.Services.filter((nfsMounted) => {
-            return nfsMountedToRemove.id === nfsMounted.id;
-          });
-        }
-        return currentHost;
-      });
-    }
-  }
 
   const handleClick = () => {
     setOpen(!open);
@@ -186,64 +64,41 @@ export default function DetailNode({ hostInput, updateHost }: NodeDetailProps) {
               handleClick();
             }}
           >
-            {host ? (open ? "Thu lại" : "Mở rộng") : "Hãy chọn host"}
+            {hostInput ? (open ? "Thu lại" : "Mở rộng") : "Hãy chọn host"}
           </Button>
         </ListSubheader>
       }
     >
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <CollapseInputText
-          property={NodeProperties.Label}
-          data={host ? host.label.text : ""}
-          onChangeHandle={(label: dataRenderType) => {
-            if (typeof label == "string") {
-              console.log(host);
-              console.log("Detail Node");
-              UpdateLabel(label);
-            }
-          }}
-        />
-        <CollapseInputText
-          property={NodeProperties.IP}
-          data={host ? host.IP : ""}
-          onChangeHandle={(ip: dataRenderType) => {
-            if (typeof ip == "string") {
-              UpdateIP(ip);
-            }
-          }}
-        />
-        <CollapseInputText
-          property={NodeProperties.Vulnerbilities}
-          data={host ? host.Vulnerbilities : []}
-          onAddHandle={(vulnerbility: dataArrayUpdate) => {
-            if (vulnerbility.type === "IVulnerbility")
-              AddVulnerbility(vulnerbility);
-          }}
-          onRemoveHandle={(vulnerbility: dataArrayUpdate) => {
-            if (vulnerbility.type === "IVulnerbility") {
-              RemoveVulnerbility(vulnerbility);
-            }
-          }}
-          isCollapse
-        />
-
-        {host ? (
-          <Box sx={{ display: "flex", justifyContent: "end" }}>
-            <Button
-              variant="contained"
-              sx={{
-                marginRight: "20px",
-                marginTop: "20px",
-                alignSelf: "flex-end",
-                padding: "10px",
-              }}
-              onClick={(e) => {
-                e.preventDefault();
-              }}
-            >
-              Lưu lại
-            </Button>
-          </Box>
+      <Collapse in={open && hostInput != null} timeout="auto" unmountOnExit>
+        {hostInput ? (
+          <>
+            <CollapseInputText
+              property={NodeProperties.Label}
+              data={hostInput}
+            />
+            <CollapseInputText property={NodeProperties.IP} data={hostInput} />
+            <CollapseInputText
+              property={NodeProperties.Vulnerbilities}
+              data={hostInput}
+              isCollapse
+            />
+            <Box sx={{ display: "flex", justifyContent: "end" }}>
+              <Button
+                variant="contained"
+                sx={{
+                  marginRight: "20px",
+                  marginTop: "20px",
+                  alignSelf: "flex-end",
+                  padding: "10px",
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+              >
+                Lưu lại
+              </Button>
+            </Box>
+          </>
         ) : null}
       </Collapse>
     </List>

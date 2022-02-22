@@ -12,35 +12,55 @@ import { Vulnerbility } from "../../utils/classes/Vulnerbility";
 import { Service } from "../../utils/classes/Service";
 import Checkbox from "@mui/material/Checkbox";
 import { FormControlLabel } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { hostActionCreators } from "../../redux";
+import { Host } from "../../utils/classes/Host";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   property: NodeProperties;
-  handleSave: (dataUpdate: Vulnerbility | Service) => void;
+  data?: Service | Vulnerbility;
+  host: Host;
 }
 
 export default function FormDialog({
   open,
   property,
   setOpen,
-  handleSave,
+  data,
+  host,
 }: Props) {
+  const dispatch = useDispatch();
+
+  const { addVulnerbilityPending } = bindActionCreators(
+    hostActionCreators,
+    dispatch
+  );
+
   const handleClose = () => {
     setOpen(false);
   };
 
-  const [dataUpdate, setDataUpdate] = useState<Vulnerbility | Service>();
+  const [dataUpdate, setDataUpdate] = useState<Service[] | Vulnerbility[]>();
 
   // Set giá trị khởi tạo đối với từng property
   useEffect(() => {
     if (property === NodeProperties.Vulnerbilities) {
-      setDataUpdate(new Vulnerbility());
+      if (data) {
+        setDataUpdate([data as Vulnerbility]);
+      } else {
+        setDataUpdate([new Vulnerbility()]);
+      }
     }
-
     if (property === NodeProperties.networkServiceInfo) {
-      setDataUpdate(new Service());
+      if (data) {
+        setDataUpdate([data as Service]);
+      } else {
+        setDataUpdate([new Service()]);
+      }
     }
-  }, []);
+  }, [data]);
 
   const renderInput = (property: NodeProperties) => {
     switch (property) {
@@ -56,9 +76,17 @@ export default function FormDialog({
               fullWidth
               variant="standard"
               onChange={(e) => {
-                let temp = dataUpdate as Vulnerbility;
-                temp.vulExist.cve = e.target.value;
-                setDataUpdate(temp);
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.Vulnerbilities) {
+                      if (dataUpdate && dataUpdate.length > 0) {
+                        let temp = dataUpdate.slice()[0] as Vulnerbility;
+                        temp.vulExist.cve = e.target.value;
+                        return [temp];
+                      }
+                    }
+                  }
+                });
               }}
             />
             <TextField
@@ -70,23 +98,39 @@ export default function FormDialog({
               fullWidth
               variant="standard"
               onChange={(e) => {
-                let temp = dataUpdate as Vulnerbility;
-                temp.vulProp.typeExploit = e.target.value;
-                setDataUpdate(temp);
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.Vulnerbilities) {
+                      if (dataUpdate && dataUpdate.length > 0) {
+                        let temp = dataUpdate.slice()[0] as Vulnerbility;
+                        temp.vulProp.typeExploit = e.target.value;
+                        return [temp];
+                      }
+                    }
+                  }
+                });
               }}
             />
             <TextField
               autoFocus
               margin="dense"
-              id="isPrivEscalation"
+              id="Service"
               label="Service"
               type="text"
               fullWidth
               variant="standard"
               onChange={(e) => {
-                let temp = dataUpdate as Vulnerbility;
-                temp.vulExist.service = e.target.value;
-                setDataUpdate(temp);
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.Vulnerbilities) {
+                      if (dataUpdate && dataUpdate.length > 0) {
+                        let temp = dataUpdate.slice()[0] as Vulnerbility;
+                        temp.vulExist.service = e.target.value;
+                        return [temp];
+                      }
+                    }
+                  }
+                });
               }}
             />
             <FormControlLabel
@@ -94,10 +138,18 @@ export default function FormDialog({
                 <Checkbox
                   defaultChecked
                   onChange={(e) => {
-                    let temp = dataUpdate as Vulnerbility;
-                    temp.vulProp.isPrivEscalation =
-                      !temp.vulProp.isPrivEscalation;
-                    setDataUpdate(temp);
+                    setDataUpdate((currentDataUpdate) => {
+                      if (currentDataUpdate) {
+                        if (property === NodeProperties.Vulnerbilities) {
+                          if (dataUpdate && dataUpdate.length > 0) {
+                            let temp = dataUpdate.slice()[0] as Vulnerbility;
+                            temp.vulProp.isPrivEscalation =
+                              e.target.value === "true" ? true : false;
+                            return [temp];
+                          }
+                        }
+                      }
+                    });
                   }}
                 />
               }
@@ -222,7 +274,15 @@ export default function FormDialog({
             sx={{ padding: "1rem" }}
             onClick={() => {
               if (dataUpdate) {
-                handleSave(dataUpdate);
+                if (property === NodeProperties.Vulnerbilities) {
+                  if(dataUpdate.length > 0)
+                  {
+                    addVulnerbilityPending({
+                      host: host,
+                      vulnerbility: dataUpdate[0] as Vulnerbility,
+                    });
+                  }
+                }
               }
               handleClose();
             }}

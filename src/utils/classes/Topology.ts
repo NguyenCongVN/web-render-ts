@@ -44,5 +44,3 @@ class Topology implements ITopology {
 export { Topology };
 
 export type dataRenderType = Service[] | Vulnerbility[] | string;
-
-export type dataArrayUpdate = Service | Vulnerbility;

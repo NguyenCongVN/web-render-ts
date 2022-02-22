@@ -1,31 +1,35 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Network, Node, Options, Data, Edge } from "vis-network";
 import { useRef, useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import { Topology } from "../../utils/classes/Topology";
 import { Container, Typography } from "@mui/material";
 import DetailNode from "../DetailNode/DetailNode";
-import { IHost } from "../../utils/interfaces/IHost";
-import AlertDialog from "../AlertModal/AlertModal";
 import { Host } from "../../utils/classes/Host";
 import { Link } from "../../utils/classes/Link";
-
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/reducers/RootReducer";
+import AlertDialog from "../AlertModal/AlertModal";
+import {
+  SetDraftHost,
+  setHosts,
+} from "../../redux/action-creators/Host.creators";
+import { setLinks } from "../../redux/action-creators/Link.creators";
 interface NetworkProps {
   topologyInput: Topology | undefined;
 }
 
 const VisNetwork = ({ topologyInput }: NetworkProps) => {
-  const [selectedHost, setSelectedHost] = useState<Host | null | undefined>(
-    null
-  );
+  const hostsState = useSelector((state: RootState) => state.hosts);
+  const dispatch = useDispatch();
 
-  const [isUpdateSuccess, setIsUpdateSuccess] = useState<boolean>(false);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
-
-  const [topology, setTopology] = useState<Topology | undefined>(topologyInput);
+  const [selectedHost, setSelectedHost] = useState<Host | undefined>(undefined);
 
   useEffect(() => {
     if (topologyInput) {
-      setTopology(topologyInput);
+      dispatch(setHosts(topologyInput.nodes));
+      dispatch(SetDraftHost(topologyInput.nodes));
+      dispatch(setLinks(topologyInput.links));
     }
   }, [topologyInput]);
 
@@ -35,6 +39,7 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
   // A reference to the vis network instance
   let network = useRef<Network | null>(null);
 
+  // Vis network configuration
   let nodes: Node[] = [
     { id: 1, label: "Node 1", shape: "image", image: "" },
     { id: 2, label: "Node 2" },
@@ -50,48 +55,22 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
     { from: 2, to: 5 },
   ];
 
-  let data: Data = {
-    nodes,
-    edges,
-  };
-
   const options: Options = {};
+  //
 
   function getNodeFromId(id: string): undefined | Host {
-    if (topology) {
-      if (topology.nodes.length > 0) {
-        return topology.nodes.find((host) => host.node_id === id);
-      } else {
-        return undefined;
-      }
+    if (hostsState.draftHosts.length > 0) {
+      return hostsState.draftHosts.find((host) => host.node_id === id);
+    } else {
+      return undefined;
     }
   }
 
-  function updateHost(hostToUpdate: Host): void {
-    setIsUpdateSuccess(false);
-    setIsUpdating(true);
-    setTopology((currentTopology) => {
-      if (currentTopology) {
-        if (currentTopology.nodes.length > 0) {
-          for (let i = 0; i < currentTopology.nodes.length; i++) {
-            if (currentTopology.nodes[i].node_id === hostToUpdate.node_id) {
-              currentTopology.nodes[i] = hostToUpdate;
-              setIsUpdateSuccess(true);
-              setIsUpdating(false);
-              break;
-            }
-          }
-          return currentTopology;
-        }
-      }
-    });
-  }
-
   useEffect(() => {
-    if (topology) {
+    if (topologyInput) {
       //  Chuyển từ topology sang dạng data format vis network
       nodes = [];
-      topology.nodes.forEach((host) => {
+      topologyInput.nodes.forEach((host) => {
         nodes.push({
           id: host.node_id,
           label: host.label.text,
@@ -106,21 +85,23 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
         });
       });
       edges = [];
-      topology.links.forEach((link) => {
+      topologyInput.links.forEach((link) => {
         edges.push({
           id: link.link_id,
           from: link.nodes[0].node_id,
           to: link.nodes[1].node_id,
         });
       });
-
-      data = {
-        nodes,
-        edges,
-      };
     }
     if (domNode.current) {
-      network.current = new Network(domNode.current, data, options);
+      network.current = new Network(
+        domNode.current,
+        {
+          nodes,
+          edges,
+        },
+        options
+      );
     } else {
       if (network.current) {
         network.current.redraw();
@@ -129,18 +110,17 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
 
     // Event in network
     network.current?.on("select", (e) => {
-      console.log(e);
       setSelectedHost(getNodeFromId(e.nodes[0]));
     });
 
     network.current?.on("deselectNode", (e) => {
-      setSelectedHost(null);
+      setSelectedHost(undefined);
     });
-  }, [domNode, network, options, topology]);
+  }, [domNode, network, options, topologyInput]);
 
   return (
     <Box sx={{ width: "100vw" }}>
-      {topology ? (
+      {hostsState.hosts.length > 0 ? (
         <Box
           style={{
             border: 1,
@@ -159,7 +139,7 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
               zIndex: 1000,
             }}
           >
-            <DetailNode hostInput={selectedHost} updateHost={updateHost} />
+            <DetailNode hostInput={selectedHost} />
           </Box>
 
           {/* Box to render Network */}
@@ -184,11 +164,11 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
         </Container>
       )}
       <AlertDialog
-        open={!isUpdateSuccess && isUpdating}
-        toogleOpen={() => {
-          setIsUpdateSuccess(!isUpdateSuccess);
-          setIsUpdating(false);
-        }}
+        open={
+          !hostsState.isUpdateSuccess &&
+          !hostsState.isUpdating &&
+          hostsState.isUpdateFailed
+        }
       />
     </Box>
   );
