@@ -2,7 +2,15 @@ import { useSelector } from "react-redux";
 import { put, call, takeEvery, all, fork, select } from "redux-saga/effects";
 import { Host } from "../../utils/classes/Host";
 import { Vulnerbility } from "../../utils/classes/Vulnerbility";
-import { AddVulnerbilityPayload } from "../payload-types/HostPayloadTypes";
+import {
+  AddNfsExportedPayload,
+  AddNfsMountedPayload,
+  AddServicePayload,
+  AddVulnerbilityPayload,
+  RemoveNfsExportedPayload,
+  RemoveNfsMountedPayload,
+  RemoveServicePayload,
+} from "../payload-types/HostPayloadTypes";
 import {
   SetDraftHost,
   setHosts,
@@ -18,10 +26,28 @@ import {
   addVulnerbilityFailed,
   removeVulnerbilitySuccess,
   removeVulnerbilityFailed,
+  addServiceSuccess,
+  addServiceFailed,
+  removeServiceSuccess,
+  removeServiceFailed,
+  addNfsMountedSuccess,
+  addNfsMountedFailed,
+  removeNfsMountedSuccess,
+  removeNfsMountedFailed,
+  addNfsExportedSuccess,
+  addNfsExportedFailed,
+  removeNfsExportedSuccess,
+  removeNfsExportedFailed,
 } from "../action-creators/Host.creators";
 import { HostActionTypes } from "../action-types/Host.types";
 import {
+  AddNfsExportedPendingAction,
+  AddNfsMountedPendingAction,
+  AddServicePendingAction,
   AddVulnerbilityPendingAction,
+  RemoveNfsExportedPendingAction,
+  RemoveNfsMountedPendingAction,
+  RemoveServicePendingAction,
   RemoveVulnerbilityPendingAction,
   UpdateDraftHostPendingAction,
   UpdateHostPendingAction,
@@ -69,6 +95,7 @@ function* watchOnUpdateHost() {
 
 function UpdateDraftHosts(hostToUpdate: Host): Host[] | null {
   const state = store.getState();
+  console.log(hostToUpdate);
   let isUpdateSuccess = false;
   for (var i = 0; i < state.hosts.draftHosts.length; i++) {
     if (state.hosts.draftHosts[i].node_id === hostToUpdate.node_id) {
@@ -78,7 +105,7 @@ function UpdateDraftHosts(hostToUpdate: Host): Host[] | null {
     }
   }
   if (isUpdateSuccess) {
-    return state.hosts.hosts;
+    return state.hosts.draftHosts;
   } else {
     return null;
   }
@@ -115,9 +142,7 @@ function AddVulnerbility(
   for (var i = 0; i < draftHosts.length; i++) {
     if (draftHosts[i].node_id === host.node_id) {
       vulns.id = draftHosts[i].Vulnerbilities.length.toString();
-      console.log(draftHosts[i].Vulnerbilities);
       draftHosts[i].Vulnerbilities.push(vulns);
-      console.log(draftHosts[i].Vulnerbilities);
       isUpdateSuccess = true;
       break;
     }
@@ -154,37 +179,42 @@ function* watchOnAddVulnerbility() {
   yield takeEvery(HostActionTypes.ADD_VULNERBILITY_PENDING, onAddVulnerbility);
 }
 
-// function RemoveVulnerbility({
-//   host,
-//   vulnerbility,
-// }: AddVulnerbilityPayload): Host[] | null {
-//   const state = store.getState();
-//   let isUpdateSuccess = false;
-//   for (var i = 0; i < state.hosts.draftHosts.length; i++) {
-//     if (state.hosts.draftHosts[i].node_id === host.node_id) {
-//       state.hosts.draftHosts[i].Vulnerbilities.filter(
-//         (vuln) => vuln.id === vulnerbility.id
-//       );
-//       isUpdateSuccess = true;
-//     }
-//   }
+function RemoveVulnerbility(
+  { host, vulnerbility }: AddVulnerbilityPayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      console.log(draftHosts[i]);
+      draftHosts[i].Vulnerbilities = draftHosts[i].Vulnerbilities.filter(
+        (vuln) => vuln.id !== vulnerbility.id
+      );
+      isUpdateSuccess = true;
+    }
+  }
 
-//   if (isUpdateSuccess) {
-//     return state.hosts.hosts;
-//   } else {
-//     return null;
-//   }
-// }
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
 
 function* onRemoveVulnerbility({ payload }: RemoveVulnerbilityPendingAction) {
   try {
-    // // Trả lại update host pending
-    // let result: Host[] | null = yield call(RemoveVulnerbility, payload);
-    // if (result) {
-    //   yield put(removeVulnerbilitySuccess(result));
-    // } else {
-    //   yield put(removeVulnerbilityFailed());
-    // }
+    // Trả lại update host pending
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(
+      RemoveVulnerbility,
+      payload,
+      draftHosts
+    );
+    if (result) {
+      yield put(removeVulnerbilitySuccess(result));
+    } else {
+      yield put(removeVulnerbilityFailed());
+    }
   } catch (error) {
     yield put(removeVulnerbilityFailed());
   }
@@ -198,11 +228,272 @@ function* watchOnRemoveVulnerbility() {
   );
 }
 
+//  Services
+function AddService(
+  { host, service }: AddServicePayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let temp = clone(service);
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      temp.id = draftHosts[i].Services.length.toString();
+      draftHosts[i].Services.push(temp);
+      isUpdateSuccess = true;
+      break;
+    }
+  }
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
+
+function* onAddService({ payload }: AddServicePendingAction) {
+  try {
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(AddService, payload, draftHosts);
+    if (result) {
+      yield put(addServiceSuccess(result));
+    } else {
+      yield put(addServiceFailed());
+    }
+  } catch (error) {
+    yield put(addServiceFailed());
+  }
+}
+
+// Bắt update draft host pending event
+function* watchOnAddService() {
+  yield takeEvery(HostActionTypes.ADD_SERVICE_PENDING, onAddService);
+}
+
+function RemoveService(
+  { host, service }: RemoveServicePayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      draftHosts[i].Services = draftHosts[i].Services.filter(
+        (srv) => srv.id !== service.id
+      );
+      isUpdateSuccess = true;
+    }
+  }
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
+
+function* onRemoveService({ payload }: RemoveServicePendingAction) {
+  try {
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(RemoveService, payload, draftHosts);
+    if (result) {
+      yield put(removeServiceSuccess(result));
+    } else {
+      yield put(removeServiceFailed());
+    }
+  } catch (error) {
+    yield put(removeServiceFailed());
+  }
+}
+
+// Bắt update draft host pending event
+function* watchOnRemoveService() {
+  yield takeEvery(HostActionTypes.REMOVE_SERVICE_PENDING, onRemoveService);
+}
+
+//  NFS Mounted
+function AddNFSMounted(
+  { host, nfsMounted }: AddNfsMountedPayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let temp = clone(nfsMounted);
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      temp.id = draftHosts[i].NSFMounted.length.toString();
+      draftHosts[i].NSFMounted.push(temp);
+      isUpdateSuccess = true;
+      break;
+    }
+  }
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
+
+function* onAddNFSMounted({ payload }: AddNfsMountedPendingAction) {
+  try {
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(AddNFSMounted, payload, draftHosts);
+    if (result) {
+      yield put(addNfsMountedSuccess(result));
+    } else {
+      yield put(addNfsMountedFailed());
+    }
+  } catch (error) {
+    yield put(addNfsMountedFailed());
+  }
+}
+
+// Bắt update draft host pending event
+function* watchOnAddNFSMounted() {
+  yield takeEvery(HostActionTypes.ADD_NFSMOUNTED_PENDING, onAddNFSMounted);
+}
+
+function RemoveNFSMounted(
+  { host, nfsMounted }: RemoveNfsMountedPayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      draftHosts[i].NSFMounted = draftHosts[i].NSFMounted.filter(
+        (nfs) => nfs.id !== nfsMounted.id
+      );
+      isUpdateSuccess = true;
+    }
+  }
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
+
+function* onRemoveNFSMounted({ payload }: RemoveNfsMountedPendingAction) {
+  try {
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(
+      RemoveNFSMounted,
+      payload,
+      draftHosts
+    );
+    if (result) {
+      yield put(removeNfsMountedSuccess(result));
+    } else {
+      yield put(removeNfsMountedFailed());
+    }
+  } catch (error) {
+    yield put(removeNfsMountedFailed());
+  }
+}
+
+// Bắt update draft host pending event
+function* watchOnRemoveNFSMounted() {
+  yield takeEvery(
+    HostActionTypes.REMOVE_NFSMOUNTED_PENDING,
+    onRemoveNFSMounted
+  );
+}
+
+//  NFS Exported
+function AddNFSExported(
+  { host, nfsExported }: AddNfsExportedPayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let temp = clone(nfsExported);
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      temp.id = draftHosts[i].NSFExportInfo.length.toString();
+      draftHosts[i].NSFExportInfo.push(temp);
+      isUpdateSuccess = true;
+      break;
+    }
+  }
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
+
+function* onAddNFSExported({ payload }: AddNfsExportedPendingAction) {
+  try {
+    console.log("asdsd");
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(AddNFSExported, payload, draftHosts);
+    if (result) {
+      yield put(addNfsExportedSuccess(result));
+    } else {
+      yield put(addNfsExportedFailed());
+    }
+  } catch (error) {
+    yield put(addNfsExportedFailed());
+  }
+}
+
+// Bắt update draft host pending event
+function* watchOnAddNFSExported() {
+  yield takeEvery(HostActionTypes.ADD_NFSEXPORTED_PENDING, onAddNFSExported);
+}
+
+function RemoveNFSExported(
+  { host, nfsExported }: RemoveNfsExportedPayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      draftHosts[i].NSFExportInfo = draftHosts[i].NSFExportInfo.filter(
+        (nfs) => nfs.id !== nfsExported.id
+      );
+      isUpdateSuccess = true;
+    }
+  }
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
+
+function* onRemoveNFSExported({ payload }: RemoveNfsExportedPendingAction) {
+  try {
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(
+      RemoveNFSExported,
+      payload,
+      draftHosts
+    );
+    if (result) {
+      yield put(removeNfsExportedSuccess(result));
+    } else {
+      yield put(removeNfsExportedFailed());
+    }
+  } catch (error) {
+    yield put(removeNfsExportedFailed());
+  }
+}
+
+// Bắt update draft host pending event
+function* watchOnRemoveNFSExported() {
+  yield takeEvery(
+    HostActionTypes.REMOVE_NFSEXPORTED_PENDING,
+    onRemoveNFSExported
+  );
+}
+
 export default function* hostsSaga() {
   yield all([
     fork(watchOnUpdateHost),
     fork(watchOnUpdateDraftHost),
     fork(watchOnAddVulnerbility),
     fork(watchOnRemoveVulnerbility),
+    fork(watchOnAddService),
+    fork(watchOnRemoveService),
+    fork(watchOnAddNFSMounted),
+    fork(watchOnRemoveNFSMounted),
+    fork(watchOnAddNFSExported),
+    fork(watchOnRemoveNFSExported),
   ]);
 }

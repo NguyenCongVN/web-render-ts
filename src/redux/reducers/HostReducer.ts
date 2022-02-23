@@ -37,7 +37,6 @@ const hostsReducer = (
     case HostActionTypes.UPDATE_HOST_SUCCESS:
       return {
         ...state,
-        hosts: action.payload,
         isUpdateFailed: false,
         isUpdating: false,
         isUpdateSuccess: true,
@@ -59,7 +58,6 @@ const hostsReducer = (
     case HostActionTypes.UPDATE_DRAFT_HOST_SUCCESS:
       return {
         ...state,
-        draftHosts: action.payload,
         isUpdateSuccess: true,
         isUpdating: false,
         isUpdateFailed: false,
@@ -91,7 +89,6 @@ const hostsReducer = (
         isUpdateSuccess: true,
         isUpdating: false,
         isUpdateFailed: false,
-        hosts: action.payload,
       };
     case HostActionTypes.ADD_VULNERBILITY_FAILED:
       return {
@@ -120,6 +117,144 @@ const hostsReducer = (
         isUpdateSuccess: false,
         isUpdating: false,
         isUpdateFailed: true,
+      };
+    //   Service
+    case HostActionTypes.ADD_SERVICE_PENDING:
+      return {
+        ...state,
+        isUpdating: true,
+        isUpdateFailed: false,
+        isUpdateSuccess: false,
+      };
+    case HostActionTypes.ADD_SERVICE_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.ADD_SERVICE_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
+    case HostActionTypes.REMOVE_SERVICE_PENDING:
+      return {
+        ...state,
+        isUpdating: true,
+        isUpdateFailed: false,
+        isUpdateSuccess: false,
+      };
+    case HostActionTypes.REMOVE_SERVICE_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.REMOVE_SERVICE_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
+
+    //   NFS Mounted
+    case HostActionTypes.ADD_NFSMOUNTED_PENDING:
+      return {
+        ...state,
+        isUpdating: true,
+        isUpdateFailed: false,
+        isUpdateSuccess: false,
+      };
+    case HostActionTypes.ADD_NFSMOUNTED_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.ADD_NFSMOUNTED_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
+    case HostActionTypes.REMOVE_NFSMOUNTED_PENDING:
+      return {
+        ...state,
+        isUpdating: true,
+        isUpdateFailed: false,
+        isUpdateSuccess: false,
+      };
+    case HostActionTypes.REMOVE_NFSMOUNTED_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.REMOVE_NFSMOUNTED_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
+    //   NFS Exported
+    case HostActionTypes.ADD_NFSEXPORTED_PENDING:
+      return {
+        ...state,
+        isUpdating: true,
+        isUpdateFailed: false,
+        isUpdateSuccess: false,
+      };
+    case HostActionTypes.ADD_NFSEXPORTED_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.ADD_NFSEXPORTED_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
+    case HostActionTypes.REMOVE_NFSEXPORTED_PENDING:
+      return {
+        ...state,
+        isUpdating: true,
+        isUpdateFailed: false,
+        isUpdateSuccess: false,
+      };
+    case HostActionTypes.REMOVE_NFSEXPORTED_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.REMOVE_NFSEXPORTED_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
+    case HostActionTypes.SAVE_DRAFTHOST:
+      return {
+        ...state,
+        hosts: state.draftHosts,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
       };
     default:
       return state;

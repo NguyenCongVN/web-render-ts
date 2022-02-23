@@ -3,11 +3,13 @@ import { Service } from "../../utils/classes/Service";
 import { Vulnerbility } from "../../utils/classes/Vulnerbility";
 import { HostActionTypes } from "../action-types/Host.types";
 import {
-  AddVulnerbilityPendingAction,
-  AddVulnerbilitySuccessAction,
-} from "../actions/Host.actions";
-import {
+  AddNfsExportedPayload,
+  AddNfsMountedPayload,
+  AddServicePayload,
   AddVulnerbilityPayload,
+  RemoveNfsExportedPayload,
+  RemoveNfsMountedPayload,
+  RemoveServicePayload,
   RemoveVulnerbilityPayload,
 } from "../payload-types/HostPayloadTypes";
 export const setHosts = (hosts: Host[]) => {
@@ -70,6 +72,8 @@ export const ToogleOpenAlert = () => {
   };
 };
 
+//  Vulnerbility
+
 export const addVulnerbilityPending = (payload: AddVulnerbilityPayload) => {
   return {
     type: HostActionTypes.ADD_VULNERBILITY_PENDING,
@@ -107,5 +111,128 @@ export const removeVulnerbilitySuccess = (payload: Host[]) => {
 export const removeVulnerbilityFailed = () => {
   return {
     type: HostActionTypes.REMOVE_VULNERBILITY_FAILED,
+  };
+};
+
+// NFS Mounted
+export const addServicePending = (payload: AddServicePayload) => {
+  return {
+    type: HostActionTypes.ADD_SERVICE_PENDING,
+    payload: payload,
+  };
+};
+export const addServiceSuccess = (payload: Host[]) => {
+  return {
+    type: HostActionTypes.ADD_SERVICE_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const addServiceFailed = () => {
+  return {
+    type: HostActionTypes.ADD_SERVICE_FAILED,
+  };
+};
+
+export const removeServicePending = (payload: RemoveServicePayload) => {
+  return {
+    type: HostActionTypes.REMOVE_SERVICE_PENDING,
+    payload: payload,
+  };
+};
+export const removeServiceSuccess = (payload: Host[]) => {
+  return {
+    type: HostActionTypes.REMOVE_SERVICE_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const removeServiceFailed = () => {
+  return {
+    type: HostActionTypes.REMOVE_SERVICE_FAILED,
+  };
+};
+
+// NFS Mounted
+export const addNfsMountedPending = (payload: AddNfsMountedPayload) => {
+  return {
+    type: HostActionTypes.ADD_NFSMOUNTED_PENDING,
+    payload: payload,
+  };
+};
+export const addNfsMountedSuccess = (payload: Host[]) => {
+  return {
+    type: HostActionTypes.ADD_NFSMOUNTED_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const addNfsMountedFailed = () => {
+  return {
+    type: HostActionTypes.ADD_NFSMOUNTED_FAILED,
+  };
+};
+
+export const removeNfsMountedPending = (payload: RemoveNfsMountedPayload) => {
+  return {
+    type: HostActionTypes.REMOVE_NFSMOUNTED_PENDING,
+    payload: payload,
+  };
+};
+export const removeNfsMountedSuccess = (payload: Host[]) => {
+  return {
+    type: HostActionTypes.REMOVE_NFSMOUNTED_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const removeNfsMountedFailed = () => {
+  return {
+    type: HostActionTypes.REMOVE_NFSMOUNTED_FAILED,
+  };
+};
+
+// NFS Exported
+export const addNfsExportedPending = (payload: AddNfsExportedPayload) => {
+  return {
+    type: HostActionTypes.ADD_NFSEXPORTED_PENDING,
+    payload: payload,
+  };
+};
+export const addNfsExportedSuccess = (payload: Host[]) => {
+  return {
+    type: HostActionTypes.ADD_NFSEXPORTED_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const addNfsExportedFailed = () => {
+  return {
+    type: HostActionTypes.ADD_NFSEXPORTED_FAILED,
+  };
+};
+
+export const removeNfsExportedPending = (payload: RemoveNfsExportedPayload) => {
+  return {
+    type: HostActionTypes.REMOVE_NFSEXPORTED_PENDING,
+    payload: payload,
+  };
+};
+export const removeNfsExportedSuccess = (payload: Host[]) => {
+  return {
+    type: HostActionTypes.REMOVE_NFSEXPORTED_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const removeNfsExportedFailed = () => {
+  return {
+    type: HostActionTypes.REMOVE_NFSEXPORTED_FAILED,
+  };
+};
+
+export const saveDraftHosts = () => {
+  return {
+    type: HostActionTypes.SAVE_DRAFTHOST,
   };
 };

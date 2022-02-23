@@ -82,22 +82,24 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
               data={hostInput}
               isCollapse
             />
-            <Box sx={{ display: "flex", justifyContent: "end" }}>
-              <Button
-                variant="contained"
-                sx={{
-                  marginRight: "20px",
-                  marginTop: "20px",
-                  alignSelf: "flex-end",
-                  padding: "10px",
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                }}
-              >
-                Lưu lại
-              </Button>
-            </Box>
+
+            <CollapseInputText
+              property={NodeProperties.networkServiceInfo}
+              data={hostInput}
+              isCollapse
+            />
+
+            <CollapseInputText
+              property={NodeProperties.nfsMounted}
+              data={hostInput}
+              isCollapse
+            />
+
+            <CollapseInputText
+              property={NodeProperties.nsfExportInfos}
+              data={hostInput}
+              isCollapse
+            />
           </>
         ) : null}
       </Collapse>

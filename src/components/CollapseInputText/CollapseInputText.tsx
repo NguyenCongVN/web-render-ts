@@ -13,16 +13,13 @@ import { IconButton, TextField, Tooltip } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import FormDialog from "../InputModal/FormDialog";
 import { NodeProperties } from "../../utils/enums/NodeProperties";
-import { Service } from "../../utils/classes/Service";
-import { Vulnerbility } from "../../utils/classes/Vulnerbility";
-import { dataRenderType } from "../../utils/classes/Topology";
 import { useEffect, useState } from "react";
 import { Host } from "../../utils/classes/Host";
 import { useDispatch } from "react-redux";
-import { updateDraftHostPending } from "../../redux/action-creators/Host.creators";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { hostActionCreators } from "../../redux";
 import DeleteIcon from "@mui/icons-material/Delete";
+import clone from "clone";
 
 interface Props {
   data: Host;
@@ -33,24 +30,29 @@ interface Props {
 const CollapseInputText = ({ property, isCollapse, data }: Props) => {
   const dispatch = useDispatch();
 
-  const { updateDraftHostPending } = bindActionCreators(
-    hostActionCreators,
-    dispatch
-  );
+  const {
+    updateDraftHostPending,
+    removeVulnerbilityPending,
+    removeServicePending,
+    removeNfsMountedPending,
+    removeNfsExportedPending,
+  } = bindActionCreators(hostActionCreators, dispatch);
 
   const [open, setOpen] = useState(true);
 
   const [formOpen, setFormOpen] = useState(false);
 
-  const [hostToUpdate, setHostToUpdate] = useState([data]);
+  const [hostToUpdate, setHostToUpdate] = useState(data);
 
   useEffect(() => {
     if (data) {
-      console.log(data);
-      console.log(property);
-      setHostToUpdate([data]);
+      setHostToUpdate(data);
     }
   }, [data]);
+
+  useEffect(() => {
+    updateDraftHostPending(hostToUpdate);
+  }, [hostToUpdate]);
 
   const handleClick = () => {
     setOpen(!open);
@@ -60,10 +62,21 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
   const renderData = (data: Host) => {
     if (property === NodeProperties.Vulnerbilities) {
       return data.Vulnerbilities.map((vulnerbility) => (
-        <ListItemButton sx={{ pl: 4 }}>
+        <ListItemButton
+          key={vulnerbility.id}
+          id={vulnerbility.id}
+          sx={{ pl: 4 }}
+        >
           <ListItemText primary={vulnerbility.vulExist.cve} />
-          <Tooltip title="Delete">
-            <IconButton>
+          <Tooltip title="Xóa">
+            <IconButton
+              onClick={(e) => {
+                removeVulnerbilityPending({
+                  host: hostToUpdate,
+                  vulnerbility: vulnerbility,
+                });
+              }}
+            >
               <DeleteIcon />
             </IconButton>
           </Tooltip>
@@ -73,8 +86,60 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
 
     if (property === NodeProperties.networkServiceInfo) {
       return data.Services.map((service) => (
-        <ListItemButton sx={{ pl: 4 }}>
+        <ListItemButton key={service.id} id={service.id} sx={{ pl: 4 }}>
           <ListItemText primary={service.service} />
+          <Tooltip title="Xóa">
+            <IconButton
+              onClick={(e) => {
+                removeServicePending({
+                  host: hostToUpdate,
+                  service: service,
+                });
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </ListItemButton>
+      ));
+    }
+
+    if (property === NodeProperties.nfsMounted) {
+      return data.NSFMounted.map((nfs) => (
+        <ListItemButton key={nfs.id} id={nfs.id} sx={{ pl: 4 }}>
+          <ListItemText primary={nfs.fileServerPath} />
+          <Tooltip title="Xóa">
+            <IconButton
+              onClick={(e) => {
+                removeNfsMountedPending({
+                  host: hostToUpdate,
+                  nfsMounted: nfs,
+                });
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </ListItemButton>
+      ));
+    }
+
+    if (property === NodeProperties.nsfExportInfos) {
+      return data.NSFExportInfo.map((nfs) => (
+        <ListItemButton key={nfs.id} id={nfs.id} sx={{ pl: 4 }}>
+          <ListItemText primary={nfs.path} />
+          <Tooltip title="Xóa">
+            <IconButton
+              onClick={(e) => {
+                removeNfsExportedPending({
+                  host: hostToUpdate,
+                  nfsExported: nfs,
+                });
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
         </ListItemButton>
       ));
     }
@@ -89,9 +154,21 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
           setFormOpen(open);
         }}
         property={property} // use property to check type to render
-        host={hostToUpdate[0]}
+        host={hostToUpdate}
       />
     );
+  };
+
+  const renderText = () => {
+    if (property) {
+      if (property === NodeProperties.IP) {
+        return hostToUpdate.IP;
+      } else {
+        return hostToUpdate.label.text;
+      }
+    } else {
+      return "";
+    }
   };
 
   if (isCollapse) {
@@ -127,31 +204,24 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
             variant="standard"
             margin="none"
             fullWidth
-            value={
-              property === NodeProperties.Label
-                ? hostToUpdate[0].label.text
-                : hostToUpdate[0].IP
-            }
+            value={renderText()}
             id={property}
             onChange={(e) => {
               if (property === NodeProperties.Label) {
                 setHostToUpdate((currentHost) => {
-                  let temp = currentHost.slice();
-                  temp[0].IP = "123";
-                  console.log(temp[0] === currentHost[0]);
-                  temp[0].label.text = e.target.value;
+                  let temp = clone(currentHost);
+                  temp.label.text = e.target.value;
                   return temp;
                 });
               }
 
               if (property === NodeProperties.IP) {
                 setHostToUpdate((currentHost) => {
-                  let temp = currentHost.slice();
-                  temp[0].IP = e.target.value;
+                  let temp = clone(currentHost);
+                  temp.IP = e.target.value;
                   return temp;
                 });
               }
-              updateDraftHostPending(hostToUpdate[0]);
             }}
           />
         </ListItemButton>

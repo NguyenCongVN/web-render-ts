@@ -16,11 +16,14 @@ import { useDispatch } from "react-redux";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { hostActionCreators } from "../../redux";
 import { Host } from "../../utils/classes/Host";
+import clone from "clone";
+import { NfsMounted } from "../../utils/classes/NsfMounted";
+import { NsfExport } from "../../utils/classes/NsfExport";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   property: NodeProperties;
-  data?: Service | Vulnerbility;
+  data?: Service | Vulnerbility | NfsMounted | NsfExport;
   host: Host;
 }
 
@@ -33,34 +36,50 @@ export default function FormDialog({
 }: Props) {
   const dispatch = useDispatch();
 
-  const { addVulnerbilityPending } = bindActionCreators(
-    hostActionCreators,
-    dispatch
-  );
+  const { addVulnerbilityPending, addServicePending, addNfsMountedPending , addNfsExportedPending } =
+    bindActionCreators(hostActionCreators, dispatch);
 
   const handleClose = () => {
     setOpen(false);
   };
 
-  const [dataUpdate, setDataUpdate] = useState<Service[] | Vulnerbility[]>();
+  const [dataUpdate, setDataUpdate] = useState<
+    Service | Vulnerbility | NfsMounted | NsfExport
+  >();
 
   // Set giá trị khởi tạo đối với từng property
   useEffect(() => {
     if (property === NodeProperties.Vulnerbilities) {
       if (data) {
-        setDataUpdate([data as Vulnerbility]);
+        setDataUpdate(data as Vulnerbility);
       } else {
-        setDataUpdate([new Vulnerbility()]);
+        setDataUpdate(new Vulnerbility());
       }
     }
     if (property === NodeProperties.networkServiceInfo) {
       if (data) {
-        setDataUpdate([data as Service]);
+        setDataUpdate(data as Service);
       } else {
-        setDataUpdate([new Service()]);
+        setDataUpdate(new Service());
       }
     }
-  }, [data]);
+
+    if (property === NodeProperties.nfsMounted) {
+      if (data) {
+        setDataUpdate(data as NfsMounted);
+      } else {
+        setDataUpdate(new NfsMounted());
+      }
+    }
+
+    if (property === NodeProperties.nsfExportInfos) {
+      if (data) {
+        setDataUpdate(data as NsfExport);
+      } else {
+        setDataUpdate(new NsfExport());
+      }
+    }
+  }, [data, property]);
 
   const renderInput = (property: NodeProperties) => {
     switch (property) {
@@ -79,10 +98,10 @@ export default function FormDialog({
                 setDataUpdate((currentDataUpdate) => {
                   if (currentDataUpdate) {
                     if (property === NodeProperties.Vulnerbilities) {
-                      if (dataUpdate && dataUpdate.length > 0) {
-                        let temp = dataUpdate.slice()[0] as Vulnerbility;
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as Vulnerbility;
                         temp.vulExist.cve = e.target.value;
-                        return [temp];
+                        return temp;
                       }
                     }
                   }
@@ -101,10 +120,10 @@ export default function FormDialog({
                 setDataUpdate((currentDataUpdate) => {
                   if (currentDataUpdate) {
                     if (property === NodeProperties.Vulnerbilities) {
-                      if (dataUpdate && dataUpdate.length > 0) {
-                        let temp = dataUpdate.slice()[0] as Vulnerbility;
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as Vulnerbility;
                         temp.vulProp.typeExploit = e.target.value;
-                        return [temp];
+                        return temp;
                       }
                     }
                   }
@@ -123,10 +142,10 @@ export default function FormDialog({
                 setDataUpdate((currentDataUpdate) => {
                   if (currentDataUpdate) {
                     if (property === NodeProperties.Vulnerbilities) {
-                      if (dataUpdate && dataUpdate.length > 0) {
-                        let temp = dataUpdate.slice()[0] as Vulnerbility;
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as Vulnerbility;
                         temp.vulExist.service = e.target.value;
-                        return [temp];
+                        return temp;
                       }
                     }
                   }
@@ -141,11 +160,11 @@ export default function FormDialog({
                     setDataUpdate((currentDataUpdate) => {
                       if (currentDataUpdate) {
                         if (property === NodeProperties.Vulnerbilities) {
-                          if (dataUpdate && dataUpdate.length > 0) {
-                            let temp = dataUpdate.slice()[0] as Vulnerbility;
+                          if (dataUpdate) {
+                            let temp = clone(dataUpdate) as Vulnerbility;
                             temp.vulProp.isPrivEscalation =
                               e.target.value === "true" ? true : false;
-                            return [temp];
+                            return temp;
                           }
                         }
                       }
@@ -168,6 +187,19 @@ export default function FormDialog({
               type="text"
               fullWidth
               variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.networkServiceInfo) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as Service;
+                        temp.service = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
             />
             <TextField
               autoFocus
@@ -177,6 +209,19 @@ export default function FormDialog({
               type="text"
               fullWidth
               variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.networkServiceInfo) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as Service;
+                        temp.protocol = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
             />
             <TextField
               autoFocus
@@ -186,6 +231,19 @@ export default function FormDialog({
               type="text"
               fullWidth
               variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.networkServiceInfo) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as Service;
+                        temp.privilege = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
             />
           </>
         );
@@ -195,29 +253,90 @@ export default function FormDialog({
             <TextField
               autoFocus
               margin="dense"
-              id="service"
-              label="Service"
+              id="host"
+              label="host"
               type="text"
               fullWidth
               variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.nfsMounted) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as NfsMounted;
+                        temp.host = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
             />
             <TextField
               autoFocus
               margin="dense"
-              id="protocol"
-              label="Protocol"
+              id="localPath"
+              label="localPath"
               type="text"
               fullWidth
               variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.nfsMounted) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as NfsMounted;
+                        temp.localPath = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
             />
             <TextField
               autoFocus
               margin="dense"
-              id="privilege"
-              label="Privilege"
+              id="fileServer"
+              label="fileServer"
               type="text"
               fullWidth
               variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.nfsMounted) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as NfsMounted;
+                        temp.fileServer = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
+            />
+            <TextField
+              autoFocus
+              margin="dense"
+              id="fileServerPath"
+              label="fileServerPath"
+              type="text"
+              fullWidth
+              variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.nfsMounted) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as NfsMounted;
+                        temp.fileServerPath = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
             />
           </>
         );
@@ -227,29 +346,46 @@ export default function FormDialog({
             <TextField
               autoFocus
               margin="dense"
-              id="service"
-              label="Service"
+              id="fileServer"
+              label="fileServer"
               type="text"
               fullWidth
               variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.nsfExportInfos) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as NsfExport;
+                        temp.fileServer = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
             />
             <TextField
               autoFocus
               margin="dense"
-              id="protocol"
-              label="Protocol"
+              id="Path"
+              label="Path"
               type="text"
               fullWidth
               variant="standard"
-            />
-            <TextField
-              autoFocus
-              margin="dense"
-              id="privilege"
-              label="Privilege"
-              type="text"
-              fullWidth
-              variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.nsfExportInfos) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as NsfExport;
+                        temp.path = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
             />
           </>
         );
@@ -275,11 +411,34 @@ export default function FormDialog({
             onClick={() => {
               if (dataUpdate) {
                 if (property === NodeProperties.Vulnerbilities) {
-                  if(dataUpdate.length > 0)
-                  {
+                  if (dataUpdate) {
                     addVulnerbilityPending({
                       host: host,
-                      vulnerbility: dataUpdate[0] as Vulnerbility,
+                      vulnerbility: dataUpdate as Vulnerbility,
+                    });
+                  }
+                }
+                if (property === NodeProperties.networkServiceInfo) {
+                  if (dataUpdate) {
+                    addServicePending({
+                      host: host,
+                      service: dataUpdate as Service,
+                    });
+                  }
+                }
+                if (property === NodeProperties.nfsMounted) {
+                  if (dataUpdate) {
+                    addNfsMountedPending({
+                      host: host,
+                      nfsMounted: dataUpdate as NfsMounted,
+                    });
+                  }
+                }
+                if (property === NodeProperties.nsfExportInfos) {
+                  if (dataUpdate) {
+                    addNfsExportedPending({
+                      host: host,
+                      nfsExported: dataUpdate as NsfExport,
                     });
                   }
                 }

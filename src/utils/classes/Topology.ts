@@ -24,9 +24,9 @@ class Topology implements ITopology {
           if (templeJsonObject.topology.links) {
             if (templeJsonObject.topology.links.length > 0) {
               for (i = 0; i < templeJsonObject.topology.links.length; i++) {
-                // cast từ node object sang Hosts
+                // cast từ node object sang links
                 let link: Link = new Link(templeJsonObject.topology.links[i]);
-                // thêm vào nodes của topology hiện tại
+                // thêm vào links của topology hiện tại
                 this.links.push(link);
               }
             }

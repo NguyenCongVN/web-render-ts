@@ -7,7 +7,10 @@ import { Container, Typography } from "@mui/material";
 import DetailNode from "../DetailNode/DetailNode";
 import { Host } from "../../utils/classes/Host";
 import { Link } from "../../utils/classes/Link";
-import { useDispatch, useSelector } from "react-redux";
+import {
+  useDispatch,
+  useSelector,
+} from "react-redux";
 import { RootState } from "../../redux/reducers/RootReducer";
 import AlertDialog from "../AlertModal/AlertModal";
 import {
@@ -15,6 +18,7 @@ import {
   setHosts,
 } from "../../redux/action-creators/Host.creators";
 import { setLinks } from "../../redux/action-creators/Link.creators";
+import clone from "clone";
 interface NetworkProps {
   topologyInput: Topology | undefined;
 }
@@ -27,9 +31,12 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
 
   useEffect(() => {
     if (topologyInput) {
-      dispatch(setHosts(topologyInput.nodes));
-      dispatch(SetDraftHost(topologyInput.nodes));
+      dispatch(setHosts(clone(topologyInput.nodes)));
+      dispatch(SetDraftHost(clone(topologyInput.nodes)));
       dispatch(setLinks(topologyInput.links));
+      if (selectedHost) {
+        setSelectedHost(getNodeFromId(selectedHost.node_id));
+      }
     }
   }, [topologyInput]);
 
