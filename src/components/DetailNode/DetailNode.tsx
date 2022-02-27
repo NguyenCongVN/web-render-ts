@@ -70,7 +70,7 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
       }
     >
       <Collapse in={open && hostInput != null} timeout="auto" unmountOnExit>
-        {hostInput ? (
+        {hostInput && !hostInput.IsRouter() && !hostInput.IsSwitch() ? (
           <>
             <CollapseInputText
               property={NodeProperties.Label}

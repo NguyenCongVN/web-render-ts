@@ -16,6 +16,7 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
     links[i].hosts = [];
     for (var j = 0; j < links[i].nodes.length; j++) {
       let hostFound = hosts.find(
+        // eslint-disable-next-line no-loop-func
         (host) => host.node_id === links[i].nodes[j].node_id
       );
       if (hostFound) {
@@ -98,7 +99,7 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
     host.Services.forEach((service) => {
       output += `networkServiceInfo(${host.label.text}, ${service.service}, ${
         service.protocol
-      }, ..... , ${service.privilege ? "root" : "user"}).\n`;
+      }, ..... , ${service.privilege_user ? "root" : "user"}).\n`;
     });
 
     host.NSFExportInfo.forEach((nfsExport) => {

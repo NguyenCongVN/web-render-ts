@@ -4,5 +4,5 @@ export interface IService {
   host: string;
   service: string;
   protocol: string;
-  privilege: string;
+  privilege_user: string;
 }

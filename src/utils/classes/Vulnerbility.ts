@@ -1,3 +1,4 @@
+import { TypeExploit } from "../enums/TypeExploit";
 import {
   IVulExist,
   IVulnerbility,
@@ -15,7 +16,7 @@ class Vulnerbility implements IVulnerbility {
     this.vulProp = {
       cve: "",
       isPrivEscalation: false,
-      typeExploit: "",
+      typeExploit: TypeExploit.localExploit,
     };
   }
   id;

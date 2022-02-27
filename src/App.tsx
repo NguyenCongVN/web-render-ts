@@ -9,7 +9,7 @@ import { Topology } from "./utils/classes/Topology";
 
 import { useEffect, useState } from "react";
 import { bindActionCreators } from "@reduxjs/toolkit";
-import { hostActionCreators, store } from "./redux";
+import { hostActionCreators } from "./redux";
 import { useDispatch, useSelector } from "react-redux";
 import { saveAs } from "file-saver";
 import { ExportToTopologyFile } from "./utils/file_utils/ExportToTopologyFile";
@@ -64,7 +64,7 @@ const App = () => {
               var blob = new Blob([topoContent], {
                 type: "text/plain;charset=utf-8",
               });
-              saveAs(blob, "example.D");
+              saveAs(blob, "topology.D");
             }}
           >
             Xuất File

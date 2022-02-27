@@ -38,7 +38,7 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
     removeNfsExportedPending,
   } = bindActionCreators(hostActionCreators, dispatch);
 
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
 

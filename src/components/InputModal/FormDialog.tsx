@@ -19,6 +19,9 @@ import { Host } from "../../utils/classes/Host";
 import clone from "clone";
 import { NfsMounted } from "../../utils/classes/NsfMounted";
 import { NsfExport } from "../../utils/classes/NsfExport";
+import BasicSelect from "../Select/Select";
+import { SelectType } from "../../utils/enums/TypeSelect";
+import { TypeExploit } from "../../utils/enums/TypeExploit";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -36,8 +39,12 @@ export default function FormDialog({
 }: Props) {
   const dispatch = useDispatch();
 
-  const { addVulnerbilityPending, addServicePending, addNfsMountedPending , addNfsExportedPending } =
-    bindActionCreators(hostActionCreators, dispatch);
+  const {
+    addVulnerbilityPending,
+    addServicePending,
+    addNfsMountedPending,
+    addNfsExportedPending,
+  } = bindActionCreators(hostActionCreators, dispatch);
 
   const handleClose = () => {
     setOpen(false);
@@ -68,7 +75,9 @@ export default function FormDialog({
       if (data) {
         setDataUpdate(data as NfsMounted);
       } else {
-        setDataUpdate(new NfsMounted());
+        let temp = new NfsMounted();
+        temp.host = host.label.text;
+        setDataUpdate(temp);
       }
     }
 
@@ -76,7 +85,9 @@ export default function FormDialog({
       if (data) {
         setDataUpdate(data as NsfExport);
       } else {
-        setDataUpdate(new NsfExport());
+        let temp = new NsfExport();
+        temp.fileServer = host.label.text;
+        setDataUpdate(temp);
       }
     }
   }, [data, property]);
@@ -107,29 +118,9 @@ export default function FormDialog({
                   }
                 });
               }}
+              required
             />
-            <TextField
-              autoFocus
-              margin="dense"
-              id="typeExploit"
-              label="Type Exploit"
-              type="text"
-              fullWidth
-              variant="standard"
-              onChange={(e) => {
-                setDataUpdate((currentDataUpdate) => {
-                  if (currentDataUpdate) {
-                    if (property === NodeProperties.Vulnerbilities) {
-                      if (dataUpdate) {
-                        let temp = clone(dataUpdate) as Vulnerbility;
-                        temp.vulProp.typeExploit = e.target.value;
-                        return temp;
-                      }
-                    }
-                  }
-                });
-              }}
-            />
+
             <TextField
               autoFocus
               margin="dense"
@@ -151,19 +142,38 @@ export default function FormDialog({
                   }
                 });
               }}
+              sx={{ marginBottom: "2rem" }}
+              required
+            />
+            <BasicSelect
+              handleChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.Vulnerbilities) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as Vulnerbility;
+                        temp.vulProp.typeExploit = e.target
+                          .value as TypeExploit;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
+              label={SelectType.TypeExploit}
             />
             <FormControlLabel
               control={
                 <Checkbox
-                  defaultChecked
                   onChange={(e) => {
                     setDataUpdate((currentDataUpdate) => {
                       if (currentDataUpdate) {
                         if (property === NodeProperties.Vulnerbilities) {
                           if (dataUpdate) {
                             let temp = clone(dataUpdate) as Vulnerbility;
-                            temp.vulProp.isPrivEscalation =
-                              e.target.value === "true" ? true : false;
+                            temp.vulProp.isPrivEscalation = e.target.checked
+                              ? true
+                              : false;
                             return temp;
                           }
                         }
@@ -200,6 +210,7 @@ export default function FormDialog({
                   }
                 });
               }}
+              required
             />
             <TextField
               autoFocus
@@ -222,12 +233,13 @@ export default function FormDialog({
                   }
                 });
               }}
+              required
             />
             <TextField
               autoFocus
               margin="dense"
               id="privilege"
-              label="Privilege"
+              label="Privilege User"
               type="text"
               fullWidth
               variant="standard"
@@ -237,13 +249,14 @@ export default function FormDialog({
                     if (property === NodeProperties.networkServiceInfo) {
                       if (dataUpdate) {
                         let temp = clone(dataUpdate) as Service;
-                        temp.privilege = e.target.value;
+                        temp.privilege_user = e.target.value;
                         return temp;
                       }
                     }
                   }
                 });
               }}
+              required
             />
           </>
         );
@@ -253,8 +266,8 @@ export default function FormDialog({
             <TextField
               autoFocus
               margin="dense"
-              id="host"
-              label="host"
+              id="fileServerPath"
+              label="fileServerPath"
               type="text"
               fullWidth
               variant="standard"
@@ -264,13 +277,14 @@ export default function FormDialog({
                     if (property === NodeProperties.nfsMounted) {
                       if (dataUpdate) {
                         let temp = clone(dataUpdate) as NfsMounted;
-                        temp.host = e.target.value;
+                        temp.fileServerPath = e.target.value;
                         return temp;
                       }
                     }
                   }
                 });
               }}
+              required
             />
             <TextField
               autoFocus
@@ -293,16 +307,11 @@ export default function FormDialog({
                   }
                 });
               }}
+              required
+              sx={{ marginBottom: "2rem" }}
             />
-            <TextField
-              autoFocus
-              margin="dense"
-              id="fileServer"
-              label="fileServer"
-              type="text"
-              fullWidth
-              variant="standard"
-              onChange={(e) => {
+            <BasicSelect
+              handleChange={(e) => {
                 setDataUpdate((currentDataUpdate) => {
                   if (currentDataUpdate) {
                     if (property === NodeProperties.nfsMounted) {
@@ -315,56 +324,13 @@ export default function FormDialog({
                   }
                 });
               }}
-            />
-            <TextField
-              autoFocus
-              margin="dense"
-              id="fileServerPath"
-              label="fileServerPath"
-              type="text"
-              fullWidth
-              variant="standard"
-              onChange={(e) => {
-                setDataUpdate((currentDataUpdate) => {
-                  if (currentDataUpdate) {
-                    if (property === NodeProperties.nfsMounted) {
-                      if (dataUpdate) {
-                        let temp = clone(dataUpdate) as NfsMounted;
-                        temp.fileServerPath = e.target.value;
-                        return temp;
-                      }
-                    }
-                  }
-                });
-              }}
+              label={SelectType.FileServerNode}
             />
           </>
         );
       case NodeProperties.nsfExportInfos:
         return (
           <>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="fileServer"
-              label="fileServer"
-              type="text"
-              fullWidth
-              variant="standard"
-              onChange={(e) => {
-                setDataUpdate((currentDataUpdate) => {
-                  if (currentDataUpdate) {
-                    if (property === NodeProperties.nsfExportInfos) {
-                      if (dataUpdate) {
-                        let temp = clone(dataUpdate) as NsfExport;
-                        temp.fileServer = e.target.value;
-                        return temp;
-                      }
-                    }
-                  }
-                });
-              }}
-            />
             <TextField
               autoFocus
               margin="dense"
@@ -386,6 +352,23 @@ export default function FormDialog({
                   }
                 });
               }}
+              sx={{ marginBottom: "2rem" }}
+            />
+            <BasicSelect
+              handleChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.nsfExportInfos) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as NsfExport;
+                        temp.client = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
+              label={SelectType.ClientNode}
             />
           </>
         );
