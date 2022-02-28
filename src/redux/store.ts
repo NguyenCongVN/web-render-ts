@@ -9,7 +9,7 @@ const sagaMiddleware = createSagaMiddleware();
 
 const composeEnhancers = composeWithDevTools({
   // Specify name here, actionsDenylist, actionsCreators and other options if needed
-  trace : true
+  trace: true,
 });
 
 export const store = createStore(

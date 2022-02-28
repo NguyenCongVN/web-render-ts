@@ -9,6 +9,19 @@ const GetHostFromLabel = (hosts: Host[], label: string): Host | undefined => {
 export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
   let output: string = "";
 
+  // Thêm thông tin isAttacker và isTarget.
+  for (var i = 0; i < hosts.length; i++) {
+    if (hosts[i].isAttacker) {
+      output += `attackerLocated(${hosts[i].label.text})\n`;
+    }
+
+    if (hosts[i].isTarget) {
+      output += `attackGoal(execCode(${hosts[i].label.text}, _))\n`;
+    }
+  }
+
+  output += "\n\n";
+
   let connectedDict: { [id: string]: Host[] } = {};
 
   //   Thêm thông tin vào các links với thông tin từ hosts
