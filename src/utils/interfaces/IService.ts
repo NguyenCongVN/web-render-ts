@@ -4,5 +4,6 @@ export interface IService {
   host: string;
   service: string;
   protocol: string;
+  port: number;
   privilege_user: string;
 }

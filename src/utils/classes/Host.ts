@@ -17,6 +17,8 @@ class Host implements IHost {
     this.height = hostJsonObject.height;
     this.width = hostJsonObject.width;
   }
+  isAttacker = false;
+  isTarget = false;
 
   IP: string = "";
   private _isRouter: boolean = false;

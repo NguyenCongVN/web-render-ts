@@ -8,12 +8,14 @@ class Service implements IService {
     this.protocol = "";
     this.privilege_user = "";
     this.type = "IService";
+    this.port = 0;
   }
   id: string;
   host: string;
   privilege_user: string;
   protocol: string;
   service: string;
+  port: number;
   type: "IService";
 }
 

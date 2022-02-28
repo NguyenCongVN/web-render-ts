@@ -56,8 +56,10 @@ const hostsReducer = (
         isUpdateFailed: false,
       };
     case HostActionTypes.UPDATE_DRAFT_HOST_SUCCESS:
+      console.log("1231231232", action.payload);
       return {
         ...state,
+        draftHosts: action.payload,
         isUpdateSuccess: true,
         isUpdating: false,
         isUpdateFailed: false,

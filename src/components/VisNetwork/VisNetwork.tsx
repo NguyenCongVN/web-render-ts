@@ -7,10 +7,7 @@ import { Container, Typography } from "@mui/material";
 import DetailNode from "../DetailNode/DetailNode";
 import { Host } from "../../utils/classes/Host";
 import { Link } from "../../utils/classes/Link";
-import {
-  useDispatch,
-  useSelector,
-} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers/RootReducer";
 import AlertDialog from "../AlertModal/AlertModal";
 import {
@@ -39,6 +36,12 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
       }
     }
   }, [topologyInput]);
+
+  useEffect(() => {
+    if (selectedHost) {
+      setSelectedHost(getNodeFromId(selectedHost.node_id));
+    }
+  }, [hostsState.draftHosts]);
 
   // A reference to the div rendered by this component
   const domNode = useRef<HTMLDivElement>(null);

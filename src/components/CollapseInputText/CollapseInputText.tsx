@@ -50,10 +50,6 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
     }
   }, [data]);
 
-  useEffect(() => {
-    updateDraftHostPending(hostToUpdate);
-  }, [hostToUpdate]);
-
   const handleClick = () => {
     setOpen(!open);
   };
@@ -207,20 +203,17 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
             value={renderText()}
             id={property}
             onChange={(e) => {
+              let temp = clone(hostToUpdate);
               if (property === NodeProperties.Label) {
-                setHostToUpdate((currentHost) => {
-                  let temp = clone(currentHost);
-                  temp.label.text = e.target.value;
-                  return temp;
-                });
+                temp.label.text = e.target.value;
+                setHostToUpdate(temp);
+                updateDraftHostPending(temp);
               }
 
               if (property === NodeProperties.IP) {
-                setHostToUpdate((currentHost) => {
-                  let temp = clone(currentHost);
-                  temp.IP = e.target.value;
-                  return temp;
-                });
+                temp.IP = e.target.value;
+                setHostToUpdate(temp);
+                updateDraftHostPending(temp);
               }
             }}
           />

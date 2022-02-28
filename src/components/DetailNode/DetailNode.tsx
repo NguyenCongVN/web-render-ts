@@ -3,40 +3,46 @@ import ListSubheader from "@mui/material/ListSubheader";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import Collapse from "@mui/material/Collapse";
-import { Box, Button, TextField } from "@mui/material";
-
-import { IHost } from "../../utils/interfaces/IHost";
-import { useEffect } from "react";
-
-import { IVulnerbility } from "../../utils/interfaces/IVulnerability";
-import { IService } from "../../utils/interfaces/IService";
-import { INfsExport } from "../../utils/interfaces/INfsExport";
-import { INfsMounted } from "../../utils/interfaces/INfsMounted";
-
+import { Box, Button, Checkbox, FormControlLabel } from "@mui/material";
 import { NodeProperties } from "../../utils/enums/NodeProperties";
-import { dataRenderType } from "../../utils/classes/Topology";
 import CollapseInputText from "../CollapseInputText/CollapseInputText";
 import { Host } from "../../utils/classes/Host";
-import { Service } from "../../utils/classes/Service";
 import { Vulnerbility } from "../../utils/classes/Vulnerbility";
-import { NsfExport } from "../../utils/classes/NsfExport";
-import { NfsMounted } from "../../utils/classes/NsfMounted";
+import clone from "clone";
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { hostActionCreators } from "../../redux";
 import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 
 interface NodeDetailProps {
   hostInput: Host | undefined;
 }
 
 export default function DetailNode({ hostInput }: NodeDetailProps) {
-  // redux action
+  const [canChooseAttacker, setCanChooseAttacker] = React.useState(
+    !hostInput?.isTarget
+  );
+  const [canChooseTarget, setCanChooseTarget] = React.useState(
+    !hostInput?.isAttacker
+  );
 
   const dispatch = useDispatch();
+  const { updateDraftHostPending } = bindActionCreators(
+    hostActionCreators,
+    dispatch
+  );
 
+  // redux action
   const [open, setOpen] = React.useState(true);
 
   const handleClick = () => {
     setOpen(!open);
   };
+
+  useEffect(() => {
+    setCanChooseAttacker(!hostInput?.isTarget);
+    setCanChooseTarget(!hostInput?.isAttacker);
+  }, [hostInput]);
 
   return (
     <List
@@ -77,24 +83,58 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
               data={hostInput}
             />
             <CollapseInputText property={NodeProperties.IP} data={hostInput} />
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={hostInput.isTarget}
+                    disabled={!canChooseTarget}
+                    onChange={(e) => {
+                      if (hostInput) {
+                        let temp = clone(hostInput);
+                        temp.isTarget = e.target.checked ? true : false;
+                        console.log("checkbox changed");
+                        updateDraftHostPending(temp);
+                        setCanChooseAttacker(!canChooseAttacker);
+                      }
+                    }}
+                  />
+                }
+                label="Is Target"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={hostInput.isAttacker}
+                    disabled={!canChooseAttacker}
+                    onChange={(e) => {
+                      if (hostInput) {
+                        let temp = clone(hostInput);
+                        temp.isAttacker = e.target.checked ? true : false;
+                        updateDraftHostPending(temp);
+                        setCanChooseTarget(!canChooseTarget);
+                      }
+                    }}
+                  />
+                }
+                label="Is Attacker"
+              />
+            </Box>
             <CollapseInputText
               property={NodeProperties.Vulnerbilities}
               data={hostInput}
               isCollapse
             />
-
             <CollapseInputText
               property={NodeProperties.networkServiceInfo}
               data={hostInput}
               isCollapse
             />
-
             <CollapseInputText
               property={NodeProperties.nfsMounted}
               data={hostInput}
               isCollapse
             />
-
             <CollapseInputText
               property={NodeProperties.nsfExportInfos}
               data={hostInput}

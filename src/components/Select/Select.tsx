@@ -8,6 +8,7 @@ import { TypeExploit } from "../../utils/enums/TypeExploit";
 import { SelectType } from "../../utils/enums/TypeSelect";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers/RootReducer";
+import { AccessTypes } from "../../utils/enums/AccessTypes";
 interface selectProps {
   handleChange: (event: SelectChangeEvent) => void;
   label: SelectType;
@@ -74,6 +75,22 @@ export default function BasicSelect({ handleChange, label }: selectProps) {
               );
             }
           })}
+        </Select>
+      );
+    }
+
+    if (type === SelectType.AccessType) {
+      return (
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={value}
+          label={label}
+          onChange={selectChange}
+        >
+          <MenuItem value={AccessTypes.Access}>{AccessTypes.Access}</MenuItem>
+          <MenuItem value={AccessTypes.read}>{AccessTypes.read}</MenuItem>
+          <MenuItem value={AccessTypes.write}>{AccessTypes.write}</MenuItem>
         </Select>
       );
     }

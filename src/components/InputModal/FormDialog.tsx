@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Vulnerbility } from "../../utils/classes/Vulnerbility";
 import { Service } from "../../utils/classes/Service";
 import Checkbox from "@mui/material/Checkbox";
-import { FormControlLabel } from "@mui/material";
+import { Box, FormControlLabel } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { hostActionCreators } from "../../redux";
@@ -22,6 +22,7 @@ import { NsfExport } from "../../utils/classes/NsfExport";
 import BasicSelect from "../Select/Select";
 import { SelectType } from "../../utils/enums/TypeSelect";
 import { TypeExploit } from "../../utils/enums/TypeExploit";
+import { AccessTypes } from "../../utils/enums/AccessTypes";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -67,7 +68,9 @@ export default function FormDialog({
       if (data) {
         setDataUpdate(data as Service);
       } else {
-        setDataUpdate(new Service());
+        let temp = new Service();
+        temp.host = host.label.text;
+        setDataUpdate(temp);
       }
     }
 
@@ -122,7 +125,6 @@ export default function FormDialog({
             />
 
             <TextField
-              autoFocus
               margin="dense"
               id="Service"
               label="Service"
@@ -213,7 +215,6 @@ export default function FormDialog({
               required
             />
             <TextField
-              autoFocus
               margin="dense"
               id="protocol"
               label="Protocol"
@@ -236,7 +237,6 @@ export default function FormDialog({
               required
             />
             <TextField
-              autoFocus
               margin="dense"
               id="privilege"
               label="Privilege User"
@@ -250,6 +250,28 @@ export default function FormDialog({
                       if (dataUpdate) {
                         let temp = clone(dataUpdate) as Service;
                         temp.privilege_user = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
+              required
+            />
+            <TextField
+              margin="dense"
+              id="privilege"
+              label="Port"
+              type="text"
+              fullWidth
+              variant="standard"
+              onChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.networkServiceInfo) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as Service;
+                        temp.port = Number(e.target.value);
                         return temp;
                       }
                     }
@@ -287,7 +309,6 @@ export default function FormDialog({
               required
             />
             <TextField
-              autoFocus
               margin="dense"
               id="localPath"
               label="localPath"
@@ -326,6 +347,24 @@ export default function FormDialog({
               }}
               label={SelectType.FileServerNode}
             />
+            <Box sx={{ marginTop: "2rem" }}>
+              <BasicSelect
+                handleChange={(e) => {
+                  setDataUpdate((currentDataUpdate) => {
+                    if (currentDataUpdate) {
+                      if (property === NodeProperties.nfsMounted) {
+                        if (dataUpdate) {
+                          let temp = clone(dataUpdate) as NfsMounted;
+                          temp.accessType = e.target.value as AccessTypes;
+                          return temp;
+                        }
+                      }
+                    }
+                  });
+                }}
+                label={SelectType.AccessType}
+              />
+            </Box>
           </>
         );
       case NodeProperties.nsfExportInfos:

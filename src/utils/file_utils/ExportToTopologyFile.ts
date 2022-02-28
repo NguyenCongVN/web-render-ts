@@ -97,9 +97,7 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
     });
 
     host.Services.forEach((service) => {
-      output += `networkServiceInfo(${host.label.text}, ${service.service}, ${
-        service.protocol
-      }, ..... , ${service.privilege_user ? "root" : "user"}).\n`;
+      output += `networkServiceInfo(${host.label.text}, ${service.service}, ${service.protocol}, ${service.port} , '${service.privilege_user}').\n`;
     });
 
     host.NSFExportInfo.forEach((nfsExport) => {
@@ -107,7 +105,7 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
     });
 
     host.NSFMounted.forEach((nfsMounted) => {
-      output += `nfsMounted(${host.label.text}, '${nfsMounted.localPath}', ${nfsMounted.fileServer}, '${nfsMounted.fileServerPath}', ${nfsMounted.type}).\n`;
+      output += `nfsMounted(${host.label.text}, '${nfsMounted.localPath}', ${nfsMounted.fileServer}, '${nfsMounted.fileServerPath}', ${nfsMounted.accessType}).\n`;
     });
 
     output += "\n";
