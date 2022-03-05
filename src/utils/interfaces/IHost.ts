@@ -5,11 +5,12 @@ import { Node2 } from "./ITopology";
 import { IVulnerbility } from "./IVulnerability";
 
 export interface IHost extends Node2 {
-  IP: string;
+  NetworkIP: string;
+  ScanIP: string;
   Vulnerbilities: IVulnerbility[];
   NSFMounted: INfsMounted[];
   NSFExportInfo: INfsExport[];
   Services: IService[];
-  IsSwitch(): boolean;
-  IsRouter(): boolean;
+  IsSwitch: boolean;
+  IsRouter: boolean;
 }

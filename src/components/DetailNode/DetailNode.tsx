@@ -1,13 +1,11 @@
 import * as React from "react";
 import ListSubheader from "@mui/material/ListSubheader";
 import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
 import Collapse from "@mui/material/Collapse";
 import { Box, Button, Checkbox, FormControlLabel } from "@mui/material";
 import { NodeProperties } from "../../utils/enums/NodeProperties";
 import CollapseInputText from "../CollapseInputText/CollapseInputText";
 import { Host } from "../../utils/classes/Host";
-import { Vulnerbility } from "../../utils/classes/Vulnerbility";
 import clone from "clone";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { hostActionCreators } from "../../redux";
@@ -76,13 +74,22 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
       }
     >
       <Collapse in={open && hostInput != null} timeout="auto" unmountOnExit>
-        {hostInput && !hostInput.IsRouter() && !hostInput.IsSwitch() ? (
+        {hostInput && !hostInput.IsRouter && !hostInput.IsSwitch ? (
           <>
             <CollapseInputText
               property={NodeProperties.Label}
               data={hostInput}
             />
-            <CollapseInputText property={NodeProperties.IP} data={hostInput} />
+            <CollapseInputText
+              property={NodeProperties.NetworkIP}
+              data={hostInput}
+            />
+            <CollapseInputText
+              property={NodeProperties.ScanIP}
+              data={hostInput}
+            />
+
+            {/* CheckBox target or attacker */}
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <FormControlLabel
                 control={
@@ -93,7 +100,6 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
                       if (hostInput) {
                         let temp = clone(hostInput);
                         temp.isTarget = e.target.checked ? true : false;
-                        console.log("checkbox changed");
                         updateDraftHostPending(temp);
                         setCanChooseAttacker(!canChooseAttacker);
                       }

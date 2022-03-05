@@ -1,7 +1,3 @@
-import { IService } from "../../utils/interfaces/IService";
-import { INfsExport } from "../../utils/interfaces/INfsExport";
-import { INfsMounted } from "../../utils/interfaces/INfsMounted";
-import { IVulnerbility } from "../../utils/interfaces/IVulnerability";
 import * as React from "react";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -157,13 +153,27 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
 
   const renderText = () => {
     if (property) {
-      if (property === NodeProperties.IP) {
-        return hostToUpdate.IP;
-      } else {
-        return hostToUpdate.label.text;
+      if (hostToUpdate) {
+        switch (property) {
+          case NodeProperties.NetworkIP:
+            if (hostToUpdate.NetworkIP) {
+              return hostToUpdate.NetworkIP;
+            }
+            return "";
+          case NodeProperties.Label:
+            if (hostToUpdate.label.text) {
+              return hostToUpdate.label.text;
+            }
+            return "";
+          case NodeProperties.ScanIP:
+            if (hostToUpdate.ScanIP) {
+              return hostToUpdate.ScanIP;
+            }
+            return "";
+          default:
+            return "";
+        }
       }
-    } else {
-      return "";
     }
   };
 
@@ -210,8 +220,14 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
                 updateDraftHostPending(temp);
               }
 
-              if (property === NodeProperties.IP) {
-                temp.IP = e.target.value;
+              if (property === NodeProperties.NetworkIP) {
+                temp.NetworkIP = e.target.value;
+                setHostToUpdate(temp);
+                updateDraftHostPending(temp);
+              }
+
+              if (property === NodeProperties.ScanIP) {
+                temp.ScanIP = e.target.value;
                 setHostToUpdate(temp);
                 updateDraftHostPending(temp);
               }

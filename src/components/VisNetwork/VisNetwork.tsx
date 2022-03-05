@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Network, Node, Options, Data, Edge } from "vis-network";
+import { Network, Node, Options, Edge } from "vis-network";
+import mergeImages from "merge-images";
 import { useRef, useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import { Topology } from "../../utils/classes/Topology";
 import { Container, Typography } from "@mui/material";
 import DetailNode from "../DetailNode/DetailNode";
 import { Host } from "../../utils/classes/Host";
-import { Link } from "../../utils/classes/Link";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers/RootReducer";
 import AlertDialog from "../AlertModal/AlertModal";
@@ -16,12 +16,14 @@ import {
 } from "../../redux/action-creators/Host.creators";
 import { setLinks } from "../../redux/action-creators/Link.creators";
 import clone from "clone";
+import AttackProcess from "../AttackProcess/AttackProcess";
 interface NetworkProps {
   topologyInput: Topology | undefined;
 }
 
 const VisNetwork = ({ topologyInput }: NetworkProps) => {
   const hostsState = useSelector((state: RootState) => state.hosts);
+  const linksState = useSelector((state: RootState) => state.links);
   const dispatch = useDispatch();
 
   const [selectedHost, setSelectedHost] = useState<Host | undefined>(undefined);
@@ -77,56 +79,109 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
   }
 
   useEffect(() => {
-    if (topologyInput) {
+    async function reload() {
       //  Chuyển từ topology sang dạng data format vis network
       nodes = [];
-      topologyInput.nodes.forEach((host) => {
-        nodes.push({
-          id: host.node_id,
-          label: host.label.text,
-          shape: "image",
-          image: `${process.env.PUBLIC_URL}/assets${host.symbol.substring(
-            1,
-            host.symbol.length
-          )}`,
-          x: host.x,
-          y: host.y,
-          size: (host.height / host.width) * 20,
-        });
-      });
+
+      for (var host of hostsState.draftHosts) {
+        let imagePath = `${
+          process.env.PUBLIC_URL
+        }/assets${host.symbol.substring(1, host.symbol.length)}`;
+        if (host.isAttacker) {
+          let b64 = await mergeImages([
+            {
+              src: `${process.env.PUBLIC_URL}/assets${host.symbol.substring(
+                1,
+                host.symbol.length
+              )}`,
+            },
+            {
+              src: `${process.env.PUBLIC_URL}/assets/symbols/hacker.png`,
+              opacity: 0.7,
+              x: (host.width - 30) / 2,
+            },
+          ]);
+          nodes.push({
+            id: host.node_id,
+            label: host.label.text,
+            shape: "image",
+            image: b64,
+            x: host.x,
+            y: host.y,
+            size: (host.height / host.width) * 20,
+          });
+        } else {
+          if (host.isTarget) {
+            let b64 = await mergeImages([
+              {
+                src: `${process.env.PUBLIC_URL}/assets${host.symbol.substring(
+                  1,
+                  host.symbol.length
+                )}`,
+              },
+              {
+                src: `${process.env.PUBLIC_URL}/assets/symbols/virus.png`,
+                opacity: 0.5,
+                x: (host.width - 30) / 2,
+              },
+            ]);
+            nodes.push({
+              id: host.node_id,
+              label: host.label.text,
+              shape: "image",
+              image: b64,
+              x: host.x,
+              y: host.y,
+              size: (host.height / host.width) * 20,
+            });
+          } else {
+            nodes.push({
+              id: host.node_id,
+              label: host.label.text,
+              shape: "image",
+              image: imagePath,
+              x: host.x,
+              y: host.y,
+              size: (host.height / host.width) * 20,
+            });
+          }
+        }
+      }
       edges = [];
-      topologyInput.links.forEach((link) => {
+      linksState.links.forEach((link) => {
         edges.push({
           id: link.link_id,
           from: link.nodes[0].node_id,
           to: link.nodes[1].node_id,
         });
       });
-    }
-    if (domNode.current) {
-      network.current = new Network(
-        domNode.current,
-        {
-          nodes,
-          edges,
-        },
-        options
-      );
-    } else {
-      if (network.current) {
-        network.current.redraw();
+
+      if (domNode.current) {
+        network.current = new Network(
+          domNode.current,
+          {
+            nodes,
+            edges,
+          },
+          options
+        );
+      } else {
+        if (network.current) {
+          network.current.redraw();
+        }
       }
+
+      // Event in network
+      network.current?.on("select", (e) => {
+        setSelectedHost(getNodeFromId(e.nodes[0]));
+      });
+
+      network.current?.on("deselectNode", (e) => {
+        setSelectedHost(undefined);
+      });
     }
-
-    // Event in network
-    network.current?.on("select", (e) => {
-      setSelectedHost(getNodeFromId(e.nodes[0]));
-    });
-
-    network.current?.on("deselectNode", (e) => {
-      setSelectedHost(undefined);
-    });
-  }, [domNode, network, options, topologyInput]);
+    reload();
+  }, [domNode, network, options, hostsState.draftHosts]);
 
   return (
     <Box sx={{ width: "100vw" }}>
@@ -151,7 +206,17 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
           >
             <DetailNode hostInput={selectedHost} />
           </Box>
-
+          <Box
+            style={{
+              position: "absolute",
+              left: "0",
+              bottom: "0",
+              width: "30%",
+              zIndex: 1000,
+            }}
+          >
+            <AttackProcess hostInput={selectedHost} />
+          </Box>
           {/* Box to render Network */}
           <Box ref={domNode} style={{ height: "80vh" }}></Box>
         </Box>

@@ -49,11 +49,12 @@ export default function BasicSelect({ handleChange, label }: selectProps) {
           onChange={selectChange}
         >
           {draftHostState.map((host) => {
-            if (!host.IsRouter() && !host.IsSwitch()) {
+            if (!host.IsRouter && !host.IsSwitch) {
               return (
                 <MenuItem value={host.label.text}>{host.label.text}</MenuItem>
               );
             }
+            return null;
           })}
         </Select>
       );
@@ -69,11 +70,12 @@ export default function BasicSelect({ handleChange, label }: selectProps) {
           onChange={selectChange}
         >
           {draftHostState.map((host) => {
-            if (!host.IsRouter() && !host.IsSwitch()) {
+            if (!host.IsRouter && !host.IsSwitch) {
               return (
                 <MenuItem value={host.label.text}>{host.label.text}</MenuItem>
               );
             }
+            return null;
           })}
         </Select>
       );

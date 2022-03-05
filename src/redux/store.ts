@@ -4,7 +4,7 @@ import { logger } from "redux-logger";
 import { composeWithDevTools } from "@redux-devtools/extension";
 import rootSaga from "./sagas/RootSaga";
 import createSagaMiddleware from "redux-saga";
-
+import { persistStore } from "redux-persist";
 const sagaMiddleware = createSagaMiddleware();
 
 const composeEnhancers = composeWithDevTools({
@@ -12,10 +12,13 @@ const composeEnhancers = composeWithDevTools({
   trace: true,
 });
 
-export const store = createStore(
+const store = createStore(
   rootReducer,
   {},
   composeEnhancers(applyMiddleware(logger, sagaMiddleware))
 );
 
 sagaMiddleware.run(rootSaga);
+
+const persistor = persistStore(store);
+export { store, persistor };

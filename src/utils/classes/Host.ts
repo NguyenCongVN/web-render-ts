@@ -8,7 +8,8 @@ import { IVulnerbility } from "../interfaces/IVulnerability";
 class Host implements IHost {
   constructor(json: any) {
     let hostJsonObject = json as IHost;
-    this.IP = hostJsonObject.IP;
+    this.NetworkIP = hostJsonObject.NetworkIP;
+    this.ScanIP = hostJsonObject.ScanIP;
     this.label = hostJsonObject.label;
     this.x = hostJsonObject.x;
     this.y = hostJsonObject.y;
@@ -16,31 +17,23 @@ class Host implements IHost {
     this.node_id = hostJsonObject.node_id;
     this.height = hostJsonObject.height;
     this.width = hostJsonObject.width;
+    // Kiểm tra xem có phải là router hay không
+    if (this.symbol.indexOf("router") > 0) {
+      this.IsRouter = true;
+    }
+
+     // Kiểm tra xem có phải là switch hay không
+     if (this.symbol.indexOf("switch") > 0) {
+      this.IsSwitch = true;
+    }
   }
   isAttacker = false;
   isTarget = false;
 
-  IP: string = "";
-  private _isRouter: boolean = false;
-
-  IsRouter(): boolean {
-    // Kiểm tra xem có phải là router hay không
-    if (this.symbol.indexOf("router") > 0) {
-      this._isRouter = true;
-    }
-    return this._isRouter;
-  }
-
-  private _isSwitch: boolean = false;
-
-  IsSwitch(): boolean {
-    // Kiểm tra xem có phải là switch hay không
-    if (this.symbol.indexOf("switch") > 0) {
-      this._isSwitch = true;
-    }
-    return this._isSwitch;
-  }
-
+  NetworkIP: string = "";
+  ScanIP: string = "";
+  IsRouter: boolean = false;
+  IsSwitch: boolean = false;
   NSFExportInfo: INfsExport[] = [];
   NSFMounted: INfsMounted[] = [];
   Services: IService[] = [];

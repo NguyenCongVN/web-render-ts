@@ -1,6 +1,7 @@
 export enum NodeProperties {
   Label = "Label",
-  IP = "IP Address",
+  NetworkIP = "NetworkIP",
+  ScanIP = "ScanIP",
   Vulnerbilities = "Vulnerbilities",
   nsfExportInfos = "nsfExportInfos",
   nfsMounted = "nfsMounted",

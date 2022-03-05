@@ -1,12 +1,17 @@
 import { Host } from "../classes/Host";
 import { Link } from "../classes/Link";
+import { TypeAttack } from "../enums/TypeAttacks";
 
 const GetHostFromLabel = (hosts: Host[], label: string): Host | undefined => {
   let hostFound = hosts.find((host) => host.label.text === label);
   return hostFound;
 };
 
-export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
+export const ExportToTopologyFile = (
+  hosts: Host[],
+  links: Link[],
+  typeAttack: TypeAttack
+): string => {
   let output: string = "";
 
   // Thêm thông tin isAttacker và isTarget.
@@ -25,7 +30,7 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
   let connectedDict: { [id: string]: Host[] } = {};
 
   //   Thêm thông tin vào các links với thông tin từ hosts
-  for (var i = 0; i < links.length; i++) {
+  for (i = 0; i < links.length; i++) {
     links[i].hosts = [];
     for (var j = 0; j < links[i].nodes.length; j++) {
       let hostFound = hosts.find(
@@ -59,7 +64,7 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
   for (const [key, value] of Object.entries(connectedDict)) {
     let hostFound = GetHostFromLabel(hosts, key);
     if (hostFound) {
-      if (hostFound.IsRouter() || hostFound.IsSwitch()) {
+      if (hostFound.IsRouter || hostFound.IsSwitch) {
         for (i = 0; i < value.length; i++) {
           // eslint-disable-next-line no-loop-func
           if (connectedDict[value[i].label.text]) {
@@ -72,7 +77,7 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
                 otherHost.label.text
               );
               if (otherHostFound) {
-                if (!otherHostFound.IsRouter() && !otherHostFound.IsSwitch()) {
+                if (!otherHostFound.IsRouter && !otherHostFound.IsSwitch) {
                   connectedDict[value[i].label.text].push(otherHost);
                 }
               }
@@ -109,9 +114,25 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
       }).\n`;
     });
 
+    // Nếu như là real attack thì thêm dòng cuối.
+    if (typeAttack === TypeAttack.Real_Attack) {
+      if (!host.IsRouter && !host.IsSwitch && !host.isAttacker) {
+        output += `/* configuration CVE Real Attack Mode for ${host.label.text} */\n`;
+        output += `vulExists(${host.label.text}, '{{CVE_Id_${host.label.text}}}', ' _ ').\nvulProperty('{{CVE_Id_${host.label.text}}}', 'remoteExploit', 'privEscalation').\n`;
+      }
+    }
+
     host.Services.forEach((service) => {
       output += `networkServiceInfo(${host.label.text}, ${service.service}, ${service.protocol}, ${service.port} , '${service.privilege_user}').\n`;
     });
+
+    // Nếu như là real attack thì thêm dòng cuối
+    if (typeAttack === TypeAttack.Real_Attack) {
+      if (!host.IsRouter && !host.IsSwitch && !host.isAttacker) {
+        output += `/* configuration Service Real Attack Mode for ${host.label.text} */\n`;
+        output += `networkServiceInfo(${host.label.text}, ' _ ', ' _ ' , root).\n`;
+      }
+    }
 
     host.NSFExportInfo.forEach((nfsExport) => {
       output += `nfsExportInfo(${host.label.text}, '${nfsExport.path}', ${nfsExport.type}, ${nfsExport.fileServer}).\n`;
@@ -125,6 +146,21 @@ export const ExportToTopologyFile = (hosts: Host[], links: Link[]): string => {
   });
 
   console.log(output);
-
   return output;
+};
+
+export const ExportScanConfigFile = (hosts: Host[]): string | null => {
+  // Scan config
+  let scanConfigString = "";
+  for (var i = 0; i < hosts.length; i++) {
+    if (!hosts[i].isAttacker && !hosts[i].IsSwitch && !hosts[i].IsRouter) {
+      console.log(hosts[i]);
+      if (hosts[i].NetworkIP === undefined || hosts[i].ScanIP === undefined) {
+        return null;
+      }
+      scanConfigString += `${hosts[i].label.text},${hosts[i].NetworkIP},${hosts[i].ScanIP}\n`;
+    }
+  }
+  console.log(scanConfigString);
+  return scanConfigString;
 };
