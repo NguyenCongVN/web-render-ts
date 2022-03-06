@@ -1,7 +1,7 @@
 import { Host } from "../classes/Host";
 import { Link } from "../classes/Link";
 import { TypeAttack } from "../enums/TypeAttacks";
-
+import { convertLabel } from "./StringUtil";
 const GetHostFromLabel = (hosts: Host[], label: string): Host | undefined => {
   let hostFound = hosts.find((host) => host.label.text === label);
   return hostFound;
@@ -17,11 +17,13 @@ export const ExportToTopologyFile = (
   // Thêm thông tin isAttacker và isTarget.
   for (var i = 0; i < hosts.length; i++) {
     if (hosts[i].isAttacker) {
-      output += `attackerLocated(${hosts[i].label.text})\n`;
+      output += `attackerLocated(${convertLabel(hosts[i].label.text)}).\n`;
     }
 
     if (hosts[i].isTarget) {
-      output += `attackGoal(execCode(${hosts[i].label.text}, _))\n`;
+      output += `attackGoal(execCode(${convertLabel(
+        hosts[i].label.text
+      )}, _)).\n`;
     }
   }
 
@@ -97,7 +99,9 @@ export const ExportToTopologyFile = (
   for (const [key, value] of Object.entries(connectedDict)) {
     // eslint-disable-next-line no-loop-func
     value.forEach((host) => {
-      output += `hacl(${key},${host.label.text}, _ , _)\n`;
+      output += `hacl(${convertLabel(key)},${convertLabel(
+        host.label.text
+      )},_ ,_).\n`;
     });
   }
 
@@ -105,41 +109,46 @@ export const ExportToTopologyFile = (
 
   //  Thêm thông tin các host đã có
   hosts.forEach((host) => {
-    output += `/* configuration information of ${host.label.text} */\n`;
+    output += `/* configuration information of ${convertLabel(
+      host.label.text
+    )} */\n`;
     host.Vulnerbilities.forEach((vuln) => {
-      output += `vulExists(${host.label.text}, '${vuln.vulExist.cve}', ${
-        vuln.vulExist.service
-      }).\nvulProperty(${vuln.vulProp.cve}, ${vuln.vulProp.typeExploit}, ${
-        vuln.vulProp.isPrivEscalation ? "privEscalation" : ""
-      }).\n`;
+      output += `vulExists(${convertLabel(host.label.text)}, '${
+        vuln.vulExist.cve
+      }', ${vuln.vulExist.service}).\nvulProperty(${vuln.vulProp.cve}, ${
+        vuln.vulProp.typeExploit
+      }, ${vuln.vulProp.isPrivEscalation ? "privEscalation" : ""}).\n`;
     });
-
-    // Nếu như là real attack thì thêm dòng cuối.
-    if (typeAttack === TypeAttack.Real_Attack) {
-      if (!host.IsRouter && !host.IsSwitch && !host.isAttacker) {
-        output += `/* configuration CVE Real Attack Mode for ${host.label.text} */\n`;
-        output += `vulExists(${host.label.text}, '{{CVE_Id_${host.label.text}}}', ' _ ').\nvulProperty('{{CVE_Id_${host.label.text}}}', 'remoteExploit', 'privEscalation').\n`;
-      }
-    }
 
     host.Services.forEach((service) => {
-      output += `networkServiceInfo(${host.label.text}, ${service.service}, ${service.protocol}, ${service.port} , '${service.privilege_user}').\n`;
+      output += `networkServiceInfo(${convertLabel(host.label.text)}, ${
+        service.service
+      }, ${service.protocol}, ${service.port} , '${
+        service.privilege_user
+      }').\n`;
     });
 
-    // Nếu như là real attack thì thêm dòng cuối
+    // Nếu như là real attack thì thêm dòng template
     if (typeAttack === TypeAttack.Real_Attack) {
       if (!host.IsRouter && !host.IsSwitch && !host.isAttacker) {
-        output += `/* configuration Service Real Attack Mode for ${host.label.text} */\n`;
-        output += `networkServiceInfo(${host.label.text}, ' _ ', ' _ ' , root).\n`;
+        output += `---REAL_ATTACK_TEMPLATE---${convertLabel(
+          host.label.text
+        )}---\n`;
       }
     }
 
     host.NSFExportInfo.forEach((nfsExport) => {
-      output += `nfsExportInfo(${host.label.text}, '${nfsExport.path}', ${nfsExport.type}, ${nfsExport.fileServer}).\n`;
+      output += `nfsExportInfo(${convertLabel(host.label.text)}, '${
+        nfsExport.path
+      }', ${nfsExport.type}, ${nfsExport.fileServer}).\n`;
     });
 
     host.NSFMounted.forEach((nfsMounted) => {
-      output += `nfsMounted(${host.label.text}, '${nfsMounted.localPath}', ${nfsMounted.fileServer}, '${nfsMounted.fileServerPath}', ${nfsMounted.accessType}).\n`;
+      output += `nfsMounted(${convertLabel(host.label.text)}, '${
+        nfsMounted.localPath
+      }', ${nfsMounted.fileServer}, '${nfsMounted.fileServerPath}', ${
+        nfsMounted.accessType
+      }).\n`;
     });
 
     output += "\n";
@@ -158,7 +167,9 @@ export const ExportScanConfigFile = (hosts: Host[]): string | null => {
       if (hosts[i].NetworkIP === undefined || hosts[i].ScanIP === undefined) {
         return null;
       }
-      scanConfigString += `${hosts[i].label.text},${hosts[i].NetworkIP},${hosts[i].ScanIP}\n`;
+      scanConfigString += `${convertLabel(hosts[i].label.text)},${
+        hosts[i].NetworkIP
+      },${hosts[i].ScanIP}\n`;
     }
   }
   console.log(scanConfigString);

@@ -106,7 +106,6 @@ function UpdateDraftHosts(hostToUpdate: Host): Host[] | null {
 function* onUpdateDraftHosts({ payload }: UpdateHostPendingAction) {
   try {
     // Trả lại update host pending
-    console.log('12312123213' , payload)
     let result: Host[] | null = yield call(UpdateDraftHosts, payload);
     if (result) {
       yield put(updateDraftHostSuccess(result));

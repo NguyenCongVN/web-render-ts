@@ -86,7 +86,7 @@ const App = () => {
                 blob = new Blob([topoContent], {
                   type: "text/plain;charset=utf-8",
                 });
-                saveAs(blob, "topology.D");
+                saveAs(blob, "topology.P");
               }
             }}
           >
