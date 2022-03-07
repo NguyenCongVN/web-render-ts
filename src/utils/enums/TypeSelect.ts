@@ -3,4 +3,6 @@ export enum SelectType {
   FileServerNode = "FileServerNode",
   ClientNode = "ClientNode",
   AccessType = "AccessType",
+  NodeFrom = "NodeFrom",
+  NodeTo = "NodeTo",
 }

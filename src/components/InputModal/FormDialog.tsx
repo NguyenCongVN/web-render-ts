@@ -23,6 +23,7 @@ import BasicSelect from "../Select/Select";
 import { SelectType } from "../../utils/enums/TypeSelect";
 import { TypeExploit } from "../../utils/enums/TypeExploit";
 import { AccessTypes } from "../../utils/enums/AccessTypes";
+import { BlackListDirection } from "../../utils/classes/Host";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -45,6 +46,7 @@ export default function FormDialog({
     addServicePending,
     addNfsMountedPending,
     addNfsExportedPending,
+    addBlackDirectionPending,
   } = bindActionCreators(hostActionCreators, dispatch);
 
   const handleClose = () => {
@@ -52,7 +54,7 @@ export default function FormDialog({
   };
 
   const [dataUpdate, setDataUpdate] = useState<
-    Service | Vulnerbility | NfsMounted | NsfExport
+    Service | Vulnerbility | NfsMounted | NsfExport | BlackListDirection
   >();
 
   // Set giá trị khởi tạo đối với từng property
@@ -92,6 +94,10 @@ export default function FormDialog({
         temp.fileServer = host.label.text;
         setDataUpdate(temp);
       }
+    }
+
+    if (property === NodeProperties.BlackListDirection) {
+      setDataUpdate(new BlackListDirection());
     }
   }, [data, property]);
 
@@ -411,6 +417,46 @@ export default function FormDialog({
             />
           </>
         );
+      case NodeProperties.BlackListDirection:
+        return (
+          <>
+            <Box sx={{ marginBottom: "2rem", marginTop: "2rem" }}>
+              <BasicSelect
+                handleChange={(e) => {
+                  setDataUpdate((currentDataUpdate) => {
+                    if (currentDataUpdate) {
+                      if (property === NodeProperties.BlackListDirection) {
+                        if (dataUpdate) {
+                          let temp = clone(dataUpdate) as BlackListDirection;
+                          temp.from = e.target.value;
+                          return temp;
+                        }
+                      }
+                    }
+                  });
+                }}
+                label={SelectType.NodeFrom}
+              />
+            </Box>
+
+            <BasicSelect
+              handleChange={(e) => {
+                setDataUpdate((currentDataUpdate) => {
+                  if (currentDataUpdate) {
+                    if (property === NodeProperties.BlackListDirection) {
+                      if (dataUpdate) {
+                        let temp = clone(dataUpdate) as BlackListDirection;
+                        temp.to = e.target.value;
+                        return temp;
+                      }
+                    }
+                  }
+                });
+              }}
+              label={SelectType.NodeTo}
+            />
+          </>
+        );
       default:
         break;
     }
@@ -462,6 +508,20 @@ export default function FormDialog({
                       host: host,
                       nfsExported: dataUpdate as NsfExport,
                     });
+                  }
+                }
+
+                if (property === NodeProperties.BlackListDirection) {
+                  if (dataUpdate) {
+                    if (
+                      (dataUpdate as BlackListDirection).from !== "" &&
+                      (dataUpdate as BlackListDirection).to !== ""
+                    ) {
+                      addBlackDirectionPending({
+                        host: host,
+                        blackDirection: dataUpdate as BlackListDirection,
+                      });
+                    }
                   }
                 }
               }

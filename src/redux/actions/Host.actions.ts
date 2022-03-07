@@ -1,10 +1,12 @@
 import { Host } from "../../utils/classes/Host";
 import { HostActionTypes } from "../action-types/Host.types";
 import {
+  AddBlackDirectionPayload,
   AddNfsExportedPayload,
   AddNfsMountedPayload,
   AddServicePayload,
   AddVulnerbilityPayload,
+  RemoveBlackDirectionPayload,
   RemoveNfsExportedPayload,
   RemoveNfsMountedPayload,
   RemoveServicePayload,
@@ -167,6 +169,32 @@ export interface RemoveNfsExportedFailedAction {
   type: HostActionTypes.REMOVE_NFSEXPORTED_FAILED;
 }
 
+export interface AddBlackDirectionPendingAction {
+  type: HostActionTypes.ADD_BLACK_DIRECTION_PENDING;
+  payload: AddBlackDirectionPayload;
+}
+
+export interface AddBlackDirectionSuccessAction {
+  type: HostActionTypes.ADD_BLACK_DIRECTION_SUCCESS;
+}
+
+export interface AddBlackDirectionFailedAction {
+  type: HostActionTypes.ADD_BLACK_DIRECTION_FAILED;
+}
+
+export interface RemoveBlackDirectionPendingAction {
+  type: HostActionTypes.REMOVE_BLACK_DIRECTION_PENDING;
+  payload: RemoveBlackDirectionPayload;
+}
+
+export interface RemoveBlackDirectionSuccessAction {
+  type: HostActionTypes.REMOVE_BLACK_DIRECTION_SUCCESS;
+}
+
+export interface RemoveBlackDirectionFailedAction {
+  type: HostActionTypes.REMOVE_BLACK_DIRECTION_FAILED;
+}
+
 export interface SaveDraftHosts {
   type: HostActionTypes.SAVE_DRAFTHOST;
 }
@@ -205,4 +233,10 @@ export type HostAction =
   | RemoveNfsExportedPendingAction
   | RemoveNfsExportedFailedAction
   | RemoveNfsExportedSuccessAction
+  | AddBlackDirectionPendingAction
+  | AddBlackDirectionSuccessAction
+  | AddBlackDirectionFailedAction
+  | RemoveBlackDirectionPendingAction
+  | RemoveBlackDirectionSuccessAction
+  | RemoveBlackDirectionFailedAction
   | SaveDraftHosts;

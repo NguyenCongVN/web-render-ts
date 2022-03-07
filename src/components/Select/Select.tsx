@@ -96,6 +96,27 @@ export default function BasicSelect({ handleChange, label }: selectProps) {
         </Select>
       );
     }
+
+    if (type === SelectType.NodeFrom || type === SelectType.NodeTo) {
+      return (
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={value}
+          label={label}
+          onChange={selectChange}
+        >
+          {draftHostState.map((host) => {
+            if (!host.IsRouter && !host.IsSwitch) {
+              return (
+                <MenuItem value={host.label.text}>{host.label.text}</MenuItem>
+              );
+            }
+            return null;
+          })}
+        </Select>
+      );
+    }
   };
 
   const selectChange = (e: SelectChangeEvent) => {

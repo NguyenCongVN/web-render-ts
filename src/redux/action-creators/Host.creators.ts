@@ -1,12 +1,12 @@
 import { Host } from "../../utils/classes/Host";
-import { Service } from "../../utils/classes/Service";
-import { Vulnerbility } from "../../utils/classes/Vulnerbility";
 import { HostActionTypes } from "../action-types/Host.types";
 import {
+  AddBlackDirectionPayload,
   AddNfsExportedPayload,
   AddNfsMountedPayload,
   AddServicePayload,
   AddVulnerbilityPayload,
+  RemoveBlackDirectionPayload,
   RemoveNfsExportedPayload,
   RemoveNfsMountedPayload,
   RemoveServicePayload,
@@ -228,6 +228,48 @@ export const removeNfsExportedSuccess = (payload: Host[]) => {
 export const removeNfsExportedFailed = () => {
   return {
     type: HostActionTypes.REMOVE_NFSEXPORTED_FAILED,
+  };
+};
+
+// Add Black Direction
+
+export const addBlackDirectionPending = (payload: AddBlackDirectionPayload) => {
+  return {
+    type: HostActionTypes.ADD_BLACK_DIRECTION_PENDING,
+    payload: payload,
+  };
+};
+export const addBlackDirectionSuccess = () => {
+  return {
+    type: HostActionTypes.ADD_BLACK_DIRECTION_SUCCESS,
+  };
+};
+
+export const addBlackDirectionFailed = () => {
+  return {
+    type: HostActionTypes.ADD_BLACK_DIRECTION_FAILED,
+  };
+};
+
+// Remove BlackDirection
+
+export const removeBlackDirectionPending = (
+  payload: RemoveBlackDirectionPayload
+) => {
+  return {
+    type: HostActionTypes.REMOVE_BLACK_DIRECTION_PENDING,
+    payload: payload,
+  };
+};
+export const removeBlackDirectionSuccess = () => {
+  return {
+    type: HostActionTypes.REMOVE_BLACK_DIRECTION_SUCCESS,
+  };
+};
+
+export const removeBlackDirectionFailed = () => {
+  return {
+    type: HostActionTypes.REMOVE_BLACK_DIRECTION_FAILED,
   };
 };
 

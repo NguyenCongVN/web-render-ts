@@ -6,4 +6,5 @@ export enum NodeProperties {
   nsfExportInfos = "nsfExportInfos",
   nfsMounted = "nfsMounted",
   networkServiceInfo = "networkServiceInfo",
+  BlackListDirection = "BlackListDirection",
 }

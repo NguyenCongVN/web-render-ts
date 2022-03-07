@@ -1,4 +1,4 @@
-import { Host } from "../../utils/classes/Host";
+import { BlackListDirection, Host } from "../../utils/classes/Host";
 import { NsfExport } from "../../utils/classes/NsfExport";
 import { NfsMounted } from "../../utils/classes/NsfMounted";
 import { Service } from "../../utils/classes/Service";
@@ -41,5 +41,15 @@ export interface AddNfsExportedPayload {
 
 export interface RemoveNfsExportedPayload {
   nfsExported: NsfExport;
+  host: Host;
+}
+
+export interface AddBlackDirectionPayload {
+  blackDirection: BlackListDirection;
+  host: Host;
+}
+
+export interface RemoveBlackDirectionPayload {
+  blackDirection: BlackListDirection;
   host: Host;
 }

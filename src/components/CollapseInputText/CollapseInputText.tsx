@@ -32,6 +32,7 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
     removeServicePending,
     removeNfsMountedPending,
     removeNfsExportedPending,
+    removeBlackDirectionPending,
   } = bindActionCreators(hostActionCreators, dispatch);
 
   const [open, setOpen] = useState(false);
@@ -126,6 +127,28 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
                 removeNfsExportedPending({
                   host: hostToUpdate,
                   nfsExported: nfs,
+                });
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </ListItemButton>
+      ));
+    }
+
+    if (property === NodeProperties.BlackListDirection) {
+      return data.BlackListDirections.map((blackDirection) => (
+        <ListItemButton sx={{ pl: 4 }}>
+          <ListItemText
+            primary={`Từ ${blackDirection.from} tới ${blackDirection.to}`}
+          />
+          <Tooltip title="Xóa">
+            <IconButton
+              onClick={(e) => {
+                removeBlackDirectionPending({
+                  host: data,
+                  blackDirection: blackDirection,
                 });
               }}
             >

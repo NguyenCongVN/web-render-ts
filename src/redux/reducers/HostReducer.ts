@@ -249,6 +249,48 @@ const hostsReducer = (
         isUpdating: false,
         isUpdateFailed: true,
       };
+    case HostActionTypes.ADD_BLACK_DIRECTION_PENDING:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: true,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.ADD_BLACK_DIRECTION_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.ADD_BLACK_DIRECTION_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
+    case HostActionTypes.REMOVE_BLACK_DIRECTION_PENDING:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: true,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.REMOVE_BLACK_DIRECTION_SUCCESS:
+      return {
+        ...state,
+        isUpdateSuccess: true,
+        isUpdating: false,
+        isUpdateFailed: false,
+      };
+    case HostActionTypes.REMOVE_BLACK_DIRECTION_FAILED:
+      return {
+        ...state,
+        isUpdateSuccess: false,
+        isUpdating: false,
+        isUpdateFailed: true,
+      };
     case HostActionTypes.SAVE_DRAFTHOST:
       return {
         ...state,

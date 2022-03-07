@@ -148,6 +148,15 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
             />
           </>
         ) : null}
+
+        {/* if router */}
+        {hostInput && hostInput.IsRouter ? (
+          <CollapseInputText
+            property={NodeProperties.BlackListDirection}
+            data={hostInput}
+            isCollapse
+          />
+        ) : null}
       </Collapse>
     </List>
   );

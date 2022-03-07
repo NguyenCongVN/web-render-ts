@@ -5,6 +5,11 @@ import { IService } from "../interfaces/IService";
 import { Label2 } from "../interfaces/ITopology";
 import { IVulnerbility } from "../interfaces/IVulnerability";
 
+export class BlackListDirection {
+  id: string = "";
+  from: string = "";
+  to: string = "";
+}
 class Host implements IHost {
   constructor(json: any) {
     let hostJsonObject = json as IHost;
@@ -22,8 +27,8 @@ class Host implements IHost {
       this.IsRouter = true;
     }
 
-     // Kiểm tra xem có phải là switch hay không
-     if (this.symbol.indexOf("switch") > 0) {
+    // Kiểm tra xem có phải là switch hay không
+    if (this.symbol.indexOf("switch") > 0) {
       this.IsSwitch = true;
     }
   }
@@ -34,6 +39,7 @@ class Host implements IHost {
   ScanIP: string = "";
   IsRouter: boolean = false;
   IsSwitch: boolean = false;
+  BlackListDirections: BlackListDirection[] = [];
   NSFExportInfo: INfsExport[] = [];
   NSFMounted: INfsMounted[] = [];
   Services: IService[] = [];

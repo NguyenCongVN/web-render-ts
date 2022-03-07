@@ -1,10 +1,12 @@
 import { put, call, takeEvery, all, fork, select } from "redux-saga/effects";
 import { Host } from "../../utils/classes/Host";
 import {
+  AddBlackDirectionPayload,
   AddNfsExportedPayload,
   AddNfsMountedPayload,
   AddServicePayload,
   AddVulnerbilityPayload,
+  RemoveBlackDirectionPayload,
   RemoveNfsExportedPayload,
   RemoveNfsMountedPayload,
   RemoveServicePayload,
@@ -30,18 +32,23 @@ import {
   addNfsExportedFailed,
   removeNfsExportedSuccess,
   removeNfsExportedFailed,
+  addBlackDirectionSuccess,
+  addBlackDirectionFailed,
+  removeBlackDirectionSuccess,
+  removeBlackDirectionFailed,
 } from "../action-creators/Host.creators";
 import { HostActionTypes } from "../action-types/Host.types";
 import {
+  AddBlackDirectionPendingAction,
   AddNfsExportedPendingAction,
   AddNfsMountedPendingAction,
   AddServicePendingAction,
   AddVulnerbilityPendingAction,
+  RemoveBlackDirectionPendingAction,
   RemoveNfsExportedPendingAction,
   RemoveNfsMountedPendingAction,
   RemoveServicePendingAction,
   RemoveVulnerbilityPendingAction,
-  UpdateDraftHostPendingAction,
   UpdateHostPendingAction,
 } from "../actions/Host.actions";
 import { store } from "../store";
@@ -411,7 +418,6 @@ function AddNFSExported(
 
 function* onAddNFSExported({ payload }: AddNfsExportedPendingAction) {
   try {
-    console.log("asdsd");
     let draftHosts: Host[] = yield select(getDraftHosts);
     let result: Host[] | null = yield call(AddNFSExported, payload, draftHosts);
     if (result) {
@@ -475,6 +481,103 @@ function* watchOnRemoveNFSExported() {
   );
 }
 
+// Add BlackDirection
+
+function AddBlackDirection(
+  { host, blackDirection }: AddBlackDirectionPayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      blackDirection.id = host.BlackListDirections.length.toString();
+      draftHosts[i].BlackListDirections.push(blackDirection);
+      isUpdateSuccess = true;
+    }
+  }
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
+
+function* onAddBlackDirection({ payload }: AddBlackDirectionPendingAction) {
+  try {
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(
+      AddBlackDirection,
+      payload,
+      draftHosts
+    );
+    if (result) {
+      yield put(addBlackDirectionSuccess());
+    } else {
+      yield put(addBlackDirectionFailed());
+    }
+  } catch (error) {
+    yield put(addBlackDirectionFailed());
+  }
+}
+
+function* watchOnAddBlackDirection() {
+  yield takeEvery(
+    HostActionTypes.ADD_BLACK_DIRECTION_PENDING,
+    onAddBlackDirection
+  );
+}
+
+// Remove Black Direction
+function RemoveBlackDirection(
+  { host, blackDirection }: RemoveBlackDirectionPayload,
+  draftHosts: Host[]
+): Host[] | null {
+  let isUpdateSuccess = false;
+  for (var i = 0; i < draftHosts.length; i++) {
+    if (draftHosts[i].node_id === host.node_id) {
+      draftHosts[i].BlackListDirections = draftHosts[
+        i
+      ].BlackListDirections.filter((blackDirectionHost) => {
+        return blackDirectionHost.id !== blackDirection.id;
+      });
+      isUpdateSuccess = true;
+    }
+  }
+
+  if (isUpdateSuccess) {
+    return draftHosts;
+  } else {
+    return null;
+  }
+}
+
+function* onRemoveBlackDirection({
+  payload,
+}: RemoveBlackDirectionPendingAction) {
+  try {
+    let draftHosts: Host[] = yield select(getDraftHosts);
+    let result: Host[] | null = yield call(
+      RemoveBlackDirection,
+      payload,
+      draftHosts
+    );
+    if (result) {
+      yield put(removeBlackDirectionSuccess());
+    } else {
+      yield put(removeBlackDirectionFailed());
+    }
+  } catch (error) {
+    yield put(removeBlackDirectionFailed());
+  }
+}
+
+function* watchOnRemoveBlackDirection() {
+  yield takeEvery(
+    HostActionTypes.REMOVE_BLACK_DIRECTION_PENDING,
+    onRemoveBlackDirection
+  );
+}
+
 export default function* hostsSaga() {
   yield all([
     fork(watchOnUpdateHost),
@@ -487,5 +590,7 @@ export default function* hostsSaga() {
     fork(watchOnRemoveNFSMounted),
     fork(watchOnAddNFSExported),
     fork(watchOnRemoveNFSExported),
+    fork(watchOnAddBlackDirection),
+    fork(watchOnRemoveBlackDirection),
   ]);
 }
