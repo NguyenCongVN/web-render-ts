@@ -3,6 +3,10 @@ import { Host } from "../classes/Host";
 import { Link } from "../classes/Link";
 import { TypeAttack } from "../enums/TypeAttacks";
 import { convertLabel } from "./StringUtil";
+export interface ConnectedDictInterface {
+  [id: string]: Host[];
+}
+
 const GetHostFromLabel = (hosts: Host[], label: string): Host | undefined => {
   let hostFound = hosts.find((host) => host.label.text === label);
   return hostFound;
@@ -34,32 +38,14 @@ const CheckConnectedHostDFS = (
   }
 };
 
-export const ExportToTopologyFile = (
-  hosts: Host[],
+export const GetConnectedDict = (
   links: Link[],
-  typeAttack: TypeAttack
-): string => {
-  let output: string = "";
-
-  // Thêm thông tin isAttacker và isTarget.
-  for (var i = 0; i < hosts.length; i++) {
-    if (hosts[i].isAttacker) {
-      output += `attackerLocated(${convertLabel(hosts[i].label.text)}).\n`;
-    }
-
-    if (hosts[i].isTarget) {
-      output += `attackGoal(execCode(${convertLabel(
-        hosts[i].label.text
-      )}, _)).\n`;
-    }
-  }
-
-  output += "\n\n";
-
+  hosts: Host[]
+): ConnectedDictInterface => {
   let connectedDict: { [id: string]: Host[] } = {};
 
   //   Thêm thông tin vào các links với thông tin từ hosts
-  for (i = 0; i < links.length; i++) {
+  for (var i = 0; i < links.length; i++) {
     links[i].hosts = [];
     for (var j = 0; j < links[i].nodes.length; j++) {
       let hostFound = hosts.find(
@@ -149,6 +135,32 @@ export const ExportToTopologyFile = (
       });
     }
   }
+  return connectedDict;
+};
+
+export const ExportToTopologyFile = (
+  hosts: Host[],
+  links: Link[],
+  typeAttack: TypeAttack
+): string => {
+  let output: string = "";
+
+  // Thêm thông tin isAttacker và isTarget.
+  for (var i = 0; i < hosts.length; i++) {
+    if (hosts[i].isAttacker) {
+      output += `attackerLocated(${convertLabel(hosts[i].label.text)}).\n`;
+    }
+
+    if (hosts[i].isTarget) {
+      output += `attackGoal(execCode(${convertLabel(
+        hosts[i].label.text
+      )}, _)).\n`;
+    }
+  }
+
+  output += "\n\n";
+
+  let connectedDict = GetConnectedDict(links, hosts);
 
   //   Lưu các hacl vào output string
   for (const [key, value] of Object.entries(connectedDict)) {
@@ -236,4 +248,16 @@ export const ExportScanConfigFile = (hosts: Host[]): string | null => {
   }
   console.log(scanConfigString);
   return scanConfigString;
+};
+
+export const ExportToConnectedMap = (hosts: Host[], links: Link[]): string => {
+  let connectedDict = GetConnectedDict(links, hosts);
+  let connectedIPDict: { [hostName: string]: string[] } = {};
+  for (const [hostName, connectedHosts] of Object.entries(connectedDict)) {
+    connectedIPDict[convertLabel(hostName)] = connectedHosts.map((connectedHost) => {
+      return connectedHost.NetworkIP;
+    });
+  }
+  let json = JSON.stringify(connectedIPDict);
+  return json;
 };

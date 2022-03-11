@@ -15,6 +15,7 @@ import { saveAs } from "file-saver";
 import {
   ExportToTopologyFile,
   ExportScanConfigFile,
+  ExportToConnectedMap,
 } from "./utils/file_utils/ExportToTopologyFile";
 import { RootState } from "./redux/reducers/RootReducer";
 import { TypeAttack } from "./utils/enums/TypeAttacks";
@@ -87,6 +88,15 @@ const App = () => {
                   type: "text/plain;charset=utf-8",
                 });
                 saveAs(blob, "topology.P");
+
+                let connectedDict = ExportToConnectedMap(
+                  hostsState.hosts,
+                  linksState.links
+                );
+                blob = new Blob([connectedDict], {
+                  type: "text/plain;charset=utf-8",
+                });
+                saveAs(blob, "ConnectedDict.json");
               }
             }}
           >
