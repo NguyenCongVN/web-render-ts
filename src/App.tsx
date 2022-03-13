@@ -7,9 +7,10 @@ import FileSelector from "./components/FileSelector/FileSelector";
 import { ConvertGNS3 } from "./utils/file_utils/ConvertGNS3File";
 import { Topology } from "./utils/classes/Topology";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { hostActionCreators } from "./redux";
+import { attackProcessActionCreators } from "./redux";
 import { useDispatch, useSelector } from "react-redux";
 import { saveAs } from "file-saver";
 import {
@@ -19,8 +20,11 @@ import {
 } from "./utils/file_utils/ExportToTopologyFile";
 import { RootState } from "./redux/reducers/RootReducer";
 import { TypeAttack } from "./utils/enums/TypeAttacks";
-
+import { SocketContext } from "./context/socket";
+// Socket io client
 const App = () => {
+  const socket = useContext(SocketContext);
+
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [topology, setTopology] = useState<Topology | undefined>(undefined);
   const [typeAttack, setTypeAttack] = useState<TypeAttack>(
@@ -29,6 +33,9 @@ const App = () => {
 
   const hostsState = useSelector((state: RootState) => state.hosts);
   const linksState = useSelector((state: RootState) => state.links);
+  const attackProcessState = useSelector(
+    (state: RootState) => state.attackProcess
+  );
 
   const dispatch = useDispatch();
 
@@ -37,7 +44,19 @@ const App = () => {
     dispatch
   );
 
+  const { startAttackPending } = bindActionCreators(
+    attackProcessActionCreators,
+    dispatch
+  );
+
   useEffect(() => {
+    // Socket event
+    if (socket) {
+      socket.io.on("open", () => {
+        console.log("Connected to server");
+      });
+    }
+
     if (fileContent) {
       setTopology(ConvertGNS3(fileContent));
     }
@@ -65,7 +84,7 @@ const App = () => {
           >
             Lưu lại
           </Button>
-          <Button
+          {/* <Button
             sx={{ marginLeft: "5px" }}
             variant="contained"
             onClick={(e) => {
@@ -101,6 +120,57 @@ const App = () => {
             }}
           >
             Xuất File
+          </Button> */}
+          <Button
+            sx={{ marginLeft: "5px" }}
+            variant="contained"
+            onClick={(e) => {
+              let scanConfigFile = ExportScanConfigFile(hostsState.hosts);
+              if (scanConfigFile === null) {
+                updateHostFailed();
+              } else {
+                let topoContent = ExportToTopologyFile(
+                  hostsState.hosts,
+                  linksState.links,
+                  typeAttack
+                );
+                let connectedDict = ExportToConnectedMap(
+                  hostsState.hosts,
+                  linksState.links
+                );
+                // Send data to server to save and run
+                //  Check if reports are in redux store
+                attackProcessState.processes.forEach((process) => {
+                  if (process.scanReportId === undefined) {
+                    return;
+                  }
+                });
+
+                startAttackPending({
+                  connectedMap: connectedDict,
+                  scanConfigFile: scanConfigFile,
+                  //@ts-ignore
+                  scanReportId: attackProcessState.processes.map((process) => {
+                    return {
+                      hostLabel: process.hostLable,
+                      reportId: process.scanReportId,
+                    };
+                  }),
+                  topologyFile: topoContent,
+                });
+              }
+            }}
+          >
+            Tấn công
+          </Button>
+          <Button
+            sx={{ marginLeft: "5px" }}
+            variant="contained"
+            onClick={(e) => {
+              saveDraftHosts();
+            }}
+          >
+            Dừng
           </Button>
           <Box
             sx={{

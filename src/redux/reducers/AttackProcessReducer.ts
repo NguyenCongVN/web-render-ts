@@ -1,29 +1,51 @@
-import { Host } from "../../utils/classes/Host";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import { AttackProcessAction } from "../actions/AttackProcessActions";
 
-interface IndividualAttackState {
+export enum IndividualAttackStatus {
+  notStarted = "notStarted",
+  scanning = "scanning",
+  attacking = "attacking",
+  gotShell = "gotShell",
+  gotMeterpreter = "gotMeterpreter",
+}
+
+interface ProgressAttack {
   detail: string;
   time: Date;
+  status: IndividualAttackStatus;
+}
+
+interface IndividualAttackState {
+  hostLable: string;
+  progress: ProgressAttack[];
+  scanReportId: string | undefined;
+  shellNumberGot: string[];
+  meterpreterGot: string[];
 }
 export interface AttackProcessState {
-  process: IndividualAttackState[];
+  processes: IndividualAttackState[];
   isStartingAttack: boolean;
   isStartAttackFailed: boolean;
   isAttacking: boolean;
   isScanning: boolean;
-  isAttackSuccess: boolean;
-  currentNode: string | undefined; // HostLabel
+  isAttackFinalTargetSuccess: boolean;
+  isStartingScanning: boolean;
+  isStartingScanningFailed: boolean;
+  currentHostLabel: string | undefined; // HostLabel
+  currentStateAttack: number | undefined; // State Number
 }
 
 const initialState: AttackProcessState = {
-  process: [],
-  isAttackSuccess: false,
+  processes: [],
+  isAttackFinalTargetSuccess: false,
   isScanning: false,
   isAttacking: false,
-  currentNode: undefined,
+  currentHostLabel: undefined,
   isStartingAttack: false,
   isStartAttackFailed: false,
+  isStartingScanning: false,
+  isStartingScanningFailed: false,
+  currentStateAttack: undefined,
 };
 
 const attackProcessReducer = (
@@ -32,7 +54,60 @@ const attackProcessReducer = (
 ): AttackProcessState => {
   switch (action.type) {
     case AttackProcessActionTypes.START_ATTACK_PENDING:
-      return { ...state, isStartingAttack: true };
+      return {
+        ...state,
+        isStartingAttack: true,
+        isStartAttackFailed: false,
+        isAttacking: false,
+        isAttackFinalTargetSuccess: false,
+        currentHostLabel: undefined,
+        currentStateAttack: undefined,
+      };
+    case AttackProcessActionTypes.START_ATTACK_FAILED:
+      return {
+        ...state,
+        isStartAttackFailed: true,
+        isStartingAttack: false,
+        isAttacking: false,
+        currentHostLabel: undefined,
+        currentStateAttack: undefined,
+      };
+    case AttackProcessActionTypes.START_ATTACK_SUCCESS:
+      return {
+        ...state,
+        isStartAttackFailed: false,
+        isStartingAttack: false,
+        isAttacking: false,
+        currentHostLabel: undefined,
+        currentStateAttack: undefined,
+      };
+
+    // Scanning
+    case AttackProcessActionTypes.START_SCANNING_PENDING:
+      return {
+        ...state,
+        isStartAttackFailed: false,
+        isStartingAttack: false,
+        isAttacking: false,
+        isStartingScanning: true,
+        isScanning: false,
+        isStartingScanningFailed: false,
+        isAttackFinalTargetSuccess: false,
+      };
+    case AttackProcessActionTypes.START_SCANNING_SUCCESS:
+      return {
+        ...state,
+        isStartingScanning: false,
+        isScanning: true,
+      };
+    case AttackProcessActionTypes.START_SCANNING_FAILED:
+      return {
+        ...state,
+        isStartingScanning: false,
+        isStartingScanningFailed: true,
+      };
+
+    // Scanning Progress
     default:
       return state;
   }
