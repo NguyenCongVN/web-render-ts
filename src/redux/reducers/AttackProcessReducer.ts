@@ -4,18 +4,19 @@ import { AttackProcessAction } from "../actions/AttackProcessActions";
 export enum IndividualAttackStatus {
   notStarted = "notStarted",
   scanning = "scanning",
+  scanfinish = "scanfinish",
   attacking = "attacking",
   gotShell = "gotShell",
   gotMeterpreter = "gotMeterpreter",
 }
 
-interface ProgressAttack {
+export interface ProgressAttack {
   detail: string;
   time: Date;
   status: IndividualAttackStatus;
 }
 
-interface IndividualAttackState {
+export interface IndividualAttackState {
   hostLable: string;
   progress: ProgressAttack[];
   scanReportId: string | undefined;
@@ -33,6 +34,9 @@ export interface AttackProcessState {
   isStartingScanningFailed: boolean;
   currentHostLabel: string | undefined; // HostLabel
   currentStateAttack: number | undefined; // State Number
+  askScanOpen: boolean;
+  detail: string;
+  attackPath: string | undefined;
 }
 
 const initialState: AttackProcessState = {
@@ -46,6 +50,9 @@ const initialState: AttackProcessState = {
   isStartingScanning: false,
   isStartingScanningFailed: false,
   currentStateAttack: undefined,
+  askScanOpen: false,
+  detail: "",
+  attackPath: undefined,
 };
 
 const attackProcessReducer = (
@@ -53,6 +60,11 @@ const attackProcessReducer = (
   action: AttackProcessAction
 ): AttackProcessState => {
   switch (action.type) {
+    case AttackProcessActionTypes.TOOGLE_ASK_SCAN:
+      return {
+        ...state,
+        askScanOpen: !state.askScanOpen,
+      };
     case AttackProcessActionTypes.START_ATTACK_PENDING:
       return {
         ...state,
@@ -78,33 +90,27 @@ const attackProcessReducer = (
         isStartAttackFailed: false,
         isStartingAttack: false,
         isAttacking: false,
-        currentHostLabel: undefined,
-        currentStateAttack: undefined,
       };
 
     // Scanning
-    case AttackProcessActionTypes.START_SCANNING_PENDING:
-      return {
-        ...state,
-        isStartAttackFailed: false,
-        isStartingAttack: false,
-        isAttacking: false,
-        isStartingScanning: true,
-        isScanning: false,
-        isStartingScanningFailed: false,
-        isAttackFinalTargetSuccess: false,
-      };
-    case AttackProcessActionTypes.START_SCANNING_SUCCESS:
+    case AttackProcessActionTypes.START_SCANING:
       return {
         ...state,
         isStartingScanning: false,
         isScanning: true,
       };
-    case AttackProcessActionTypes.START_SCANNING_FAILED:
+
+    case AttackProcessActionTypes.ADD_DETAIL_PROCESS:
       return {
         ...state,
-        isStartingScanning: false,
-        isStartingScanningFailed: true,
+        detail: state.detail.concat(
+          `${new Date().toLocaleDateString("en", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            weekday: "short",
+          })}: ${action.payload.Detail}\n`
+        ),
       };
 
     // Scanning Progress

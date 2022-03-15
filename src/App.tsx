@@ -12,7 +12,6 @@ import { bindActionCreators } from "@reduxjs/toolkit";
 import { hostActionCreators } from "./redux";
 import { attackProcessActionCreators } from "./redux";
 import { useDispatch, useSelector } from "react-redux";
-import { saveAs } from "file-saver";
 import {
   ExportToTopologyFile,
   ExportScanConfigFile,
@@ -21,6 +20,13 @@ import {
 import { RootState } from "./redux/reducers/RootReducer";
 import { TypeAttack } from "./utils/enums/TypeAttacks";
 import { SocketContext } from "./context/socket";
+import { SocketEvents } from "./utils/enums/SocketEvents";
+import {
+  AddDetailPayload,
+  ScanSuccessPayload,
+  StartAttackSuccessPayload,
+} from "./redux/payload-types/AttackProcessPayloadTypes";
+import AlertModal from "./components/AlertModal/AlertModal";
 // Socket io client
 const App = () => {
   const socket = useContext(SocketContext);
@@ -29,6 +35,17 @@ const App = () => {
   const [topology, setTopology] = useState<Topology | undefined>(undefined);
   const [typeAttack, setTypeAttack] = useState<TypeAttack>(
     TypeAttack.Logical_Attack
+  );
+
+  // Start attack
+  const [configScanFile, setConfigScanFile] = useState<string | undefined>(
+    undefined
+  );
+  const [topologyFile, setTopologyFile] = useState<string | undefined>(
+    undefined
+  );
+  const [connectedMap, setConnectedMap] = useState<string | undefined>(
+    undefined
   );
 
   const hostsState = useSelector((state: RootState) => state.hosts);
@@ -44,22 +61,33 @@ const App = () => {
     dispatch
   );
 
-  const { startAttackPending } = bindActionCreators(
-    attackProcessActionCreators,
-    dispatch
-  );
+  const {
+    startAttackPending,
+    toogleAskScan,
+    addDetailProcess,
+    startScaning,
+    scanSuccess,
+    scanFailed,
+  } = bindActionCreators(attackProcessActionCreators, dispatch);
 
   useEffect(() => {
-    // Socket event
-    if (socket) {
-      socket.io.on("open", () => {
-        console.log("Connected to server");
-      });
-    }
-
     if (fileContent) {
       setTopology(ConvertGNS3(fileContent));
     }
+    socket?.on(SocketEvents.ADD_DETAIL, (detail: AddDetailPayload) => {
+      console.log("add detail");
+      addDetailProcess(detail);
+    });
+
+    socket?.on(SocketEvents.SCANING, () => {
+      console.log("Scanning");
+      startScaning();
+    });
+
+    socket?.on(SocketEvents.SCAN_SUCCESS, (payload: ScanSuccessPayload) => {
+      console.log("Scan sucessfully");
+      scanSuccess(payload);
+    });
   }, [fileContent]);
 
   return (
@@ -84,43 +112,6 @@ const App = () => {
           >
             Lưu lại
           </Button>
-          {/* <Button
-            sx={{ marginLeft: "5px" }}
-            variant="contained"
-            onClick={(e) => {
-              let scanConfigFile = ExportScanConfigFile(hostsState.hosts);
-
-              if (scanConfigFile === null) {
-                updateHostFailed();
-              } else {
-                var blob = new Blob([scanConfigFile], {
-                  type: "text/plain;charset=utf-8",
-                });
-
-                saveAs(blob, "scan_config.csv");
-                let topoContent = ExportToTopologyFile(
-                  hostsState.hosts,
-                  linksState.links,
-                  typeAttack
-                );
-                blob = new Blob([topoContent], {
-                  type: "text/plain;charset=utf-8",
-                });
-                saveAs(blob, "topology.P");
-
-                let connectedDict = ExportToConnectedMap(
-                  hostsState.hosts,
-                  linksState.links
-                );
-                blob = new Blob([connectedDict], {
-                  type: "text/plain;charset=utf-8",
-                });
-                saveAs(blob, "ConnectedDict.json");
-              }
-            }}
-          >
-            Xuất File
-          </Button> */}
           <Button
             sx={{ marginLeft: "5px" }}
             variant="contained"
@@ -134,30 +125,47 @@ const App = () => {
                   linksState.links,
                   typeAttack
                 );
-                let connectedDict = ExportToConnectedMap(
+                let connectedMap = ExportToConnectedMap(
                   hostsState.hosts,
                   linksState.links
                 );
+
+                let checkAllContainReport = true;
                 // Send data to server to save and run
                 //  Check if reports are in redux store
-                attackProcessState.processes.forEach((process) => {
-                  if (process.scanReportId === undefined) {
-                    return;
-                  }
-                });
+                if (attackProcessState.processes.length > 0) {
+                  attackProcessState.processes.forEach((process) => {
+                    if (process.scanReportId === undefined) {
+                      console.log("No Scan report");
+                      checkAllContainReport = false;
+                    }
+                  });
+                } else {
+                  console.log("No Scan report");
+                  checkAllContainReport = false;
+                }
 
-                startAttackPending({
-                  connectedMap: connectedDict,
-                  scanConfigFile: scanConfigFile,
-                  //@ts-ignore
-                  scanReportId: attackProcessState.processes.map((process) => {
-                    return {
-                      hostLabel: process.hostLable,
-                      reportId: process.scanReportId,
-                    };
-                  }),
-                  topologyFile: topoContent,
-                });
+                if (checkAllContainReport) {
+                  startAttackPending({
+                    connectedMap: connectedMap,
+                    scanConfigFile: scanConfigFile,
+                    //@ts-ignore
+                    scanReportId: attackProcessState.processes.map(
+                      (process) => {
+                        return {
+                          hostLabel: process.hostLable,
+                          reportId: process.scanReportId,
+                        };
+                      }
+                    ),
+                    topologyFile: topoContent,
+                  });
+                } else {
+                  toogleAskScan();
+                  setTopologyFile(topoContent);
+                  setConfigScanFile(scanConfigFile);
+                  setConnectedMap(connectedMap);
+                }
               }
             }}
           >
@@ -198,6 +206,13 @@ const App = () => {
           </Box>
         </Container>
         <VisNetwork topologyInput={topology} />
+        <AlertModal
+          askScan
+          open={attackProcessState.askScanOpen}
+          connectedMap={connectedMap}
+          scanConfigFile={configScanFile}
+          topoContent={topologyFile}
+        ></AlertModal>
       </Stack>
     </Box>
   );

@@ -4,7 +4,7 @@ import mergeImages from "merge-images";
 import { useRef, useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import { Topology } from "../../utils/classes/Topology";
-import { Container, Typography } from "@mui/material";
+import { Container, LinearProgress, Typography } from "@mui/material";
 import DetailNode from "../DetailNode/DetailNode";
 import { Host } from "../../utils/classes/Host";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,6 +24,9 @@ interface NetworkProps {
 const VisNetwork = ({ topologyInput }: NetworkProps) => {
   const hostsState = useSelector((state: RootState) => state.hosts);
   const linksState = useSelector((state: RootState) => state.links);
+  const attackProcessState = useSelector(
+    (state: RootState) => state.attackProcess
+  );
   const dispatch = useDispatch();
 
   const [selectedHost, setSelectedHost] = useState<Host | undefined>(undefined);
@@ -217,6 +220,7 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
           >
             <AttackProcess hostInput={selectedHost} />
           </Box>
+
           {/* Box to render Network */}
           <Box ref={domNode} style={{ height: "80vh" }}></Box>
         </Box>

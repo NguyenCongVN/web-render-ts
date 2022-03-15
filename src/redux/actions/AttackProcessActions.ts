@@ -1,5 +1,14 @@
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
-import { StartAttackPendingPayload } from "../payload-types/AttackProcessPayloadTypes";
+import {
+  AddDetailPayload,
+  ScanFailedPayload,
+  ScanSuccessPayload,
+  StartAttackPendingPayload,
+} from "../payload-types/AttackProcessPayloadTypes";
+
+export interface ToogleAskScanAction {
+  type: AttackProcessActionTypes.TOOGLE_ASK_SCAN;
+}
 export interface StartAttackPendingAction {
   type: AttackProcessActionTypes.START_ATTACK_PENDING;
   payload: StartAttackPendingPayload;
@@ -7,10 +16,6 @@ export interface StartAttackPendingAction {
 
 export interface StartAttackSuccessAction {
   type: AttackProcessActionTypes.START_ATTACK_SUCCESS;
-  payload: {
-    currentHostLabel: string;
-    currentStateNum: number;
-  };
 }
 
 export interface StartAttackFailedAction {
@@ -18,27 +23,31 @@ export interface StartAttackFailedAction {
 }
 
 // Scanning
-export interface StartScanningPendingAction {
-  type: AttackProcessActionTypes.START_SCANNING_PENDING;
-  payload: {
-    scanConfigFile: string;
-    topologyFile: string;
-    connectedMap: string;
-  };
+export interface StartScanningAction {
+  type: AttackProcessActionTypes.START_SCANING;
 }
 
-export interface StartScanningSuccessAction {
-  type: AttackProcessActionTypes.START_SCANNING_SUCCESS;
+export interface ScanningSuccessAction {
+  type: AttackProcessActionTypes.SCANING_SUCCESS;
+  payload : ScanSuccessPayload
 }
 
-export interface StartScanningFailedAction {
-  type: AttackProcessActionTypes.START_SCANNING_FAILED;
+
+export interface ScanningFailedAction {
+  type: AttackProcessActionTypes.SCANING_FAILED;
+  payload : ScanFailedPayload
+}
+
+// Add Detail
+export interface AddDetailProcessAction {
+  type: AttackProcessActionTypes.ADD_DETAIL_PROCESS;
+  payload: AddDetailPayload;
 }
 
 export type AttackProcessAction =
   | StartAttackPendingAction
   | StartAttackSuccessAction
   | StartAttackFailedAction
-  | StartScanningFailedAction
-  | StartScanningPendingAction
-  | StartScanningSuccessAction;
+  | ToogleAskScanAction
+  | StartScanningAction
+  | AddDetailProcessAction;
