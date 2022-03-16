@@ -19,14 +19,18 @@ function TabPanel(props: TabPanelProps) {
 
   return (
     <div
-      style={{ height: "60%", overflow: "auto" }}
+      style={{ display: value === index ? "flex" : "none", flexGrow: 1 }}
       role="tabpanel"
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3, height: "100%" }}>{children}</Box>}
+      {value === index && (
+        <Box sx={{ p: 3, display: "flex", flexDirection: "column", flex: 1 }}>
+          {children}
+        </Box>
+      )}
     </div>
   );
 }
@@ -50,8 +54,20 @@ export default function AttackProcessResultTab() {
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        height: "45vh",
+      }}
+    >
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: "divider",
+        }}
+      >
         <Tabs
           value={value}
           onChange={handleChange}
@@ -62,7 +78,7 @@ export default function AttackProcessResultTab() {
           <Tab label="Kết quả" {...a11yProps(2)} />
         </Tabs>
       </Box>
-      <Box sx={{ height: "60vh", overflow: "auto" }}>
+      <Box sx={{ display: "flex", flex: 1 }}>
         <TabPanel value={value} index={0}>
           <Typography sx={{ whiteSpace: "pre-wrap" }} variant="subtitle2">
             {attackProcessState.detail}

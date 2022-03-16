@@ -53,11 +53,9 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
       <List
         sx={{
           width: "100%",
-          maxHeight: 500,
           bgcolor: "grey.A100",
           overflow: "auto",
           borderRadius: "10px",
-          height: "100%",
         }}
         component="nav"
         aria-labelledby="nested-list-subheader"
@@ -81,7 +79,12 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
           </ListSubheader>
         }
       >
-        <Collapse in={open} timeout="auto" unmountOnExit>
+        <Collapse
+          in={open}
+          timeout="auto"
+          unmountOnExit
+          sx={{ minHeight: "25rem", display: "flex", flex: 1 }}
+        >
           <AttackProcessResultTab />
         </Collapse>
       </List>
