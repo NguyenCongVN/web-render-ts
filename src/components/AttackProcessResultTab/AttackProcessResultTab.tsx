@@ -85,7 +85,7 @@ export default function AttackProcessResultTab() {
           </Typography>
         </TabPanel>
         <TabPanel value={value} index={1}>
-          Attack Path
+          Logical Attack Path : {attackProcessState.attackPath}
         </TabPanel>
         <TabPanel value={value} index={2}>
           <VerticalTabs />

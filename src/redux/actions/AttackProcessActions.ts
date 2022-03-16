@@ -4,6 +4,7 @@ import {
   ScanFailedPayload,
   ScanSuccessPayload,
   StartAttackPendingPayload,
+  TrainingSuccessPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 
 export interface ToogleAskScanAction {
@@ -29,13 +30,12 @@ export interface StartScanningAction {
 
 export interface ScanningSuccessAction {
   type: AttackProcessActionTypes.SCANING_SUCCESS;
-  payload : ScanSuccessPayload
+  payload: ScanSuccessPayload;
 }
-
 
 export interface ScanningFailedAction {
   type: AttackProcessActionTypes.SCANING_FAILED;
-  payload : ScanFailedPayload
+  payload: ScanFailedPayload;
 }
 
 // Add Detail
@@ -44,10 +44,32 @@ export interface AddDetailProcessAction {
   payload: AddDetailPayload;
 }
 
+export interface ScanSuccessAllAction {
+  type: AttackProcessActionTypes.SCANING_SUCCESS_ALL;
+}
+
+export interface StartTrainingAction {
+  type: AttackProcessActionTypes.TRANING;
+}
+
+export interface TrainSucessAction {
+  type: AttackProcessActionTypes.TRANING_SUCCESS;
+  payload: TrainingSuccessPayload;
+}
+
+export interface TrainFailedAction {
+  type: AttackProcessActionTypes.TRANING_FAILED;
+}
+
 export type AttackProcessAction =
   | StartAttackPendingAction
   | StartAttackSuccessAction
   | StartAttackFailedAction
   | ToogleAskScanAction
   | StartScanningAction
-  | AddDetailProcessAction;
+  | AddDetailProcessAction
+  | ScanningFailedAction
+  | ScanSuccessAllAction
+  | StartTrainingAction
+  | TrainSucessAction
+  | TrainFailedAction;

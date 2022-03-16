@@ -31,7 +31,9 @@ export interface AttackProcessState {
   isScanning: boolean;
   isAttackFinalTargetSuccess: boolean;
   isStartingScanning: boolean;
-  isStartingScanningFailed: boolean;
+  isScanningFailed: boolean;
+  isTraining: boolean;
+  isTrainingFailed: boolean;
   currentHostLabel: string | undefined; // HostLabel
   currentStateAttack: number | undefined; // State Number
   askScanOpen: boolean;
@@ -48,7 +50,9 @@ const initialState: AttackProcessState = {
   isStartingAttack: false,
   isStartAttackFailed: false,
   isStartingScanning: false,
-  isStartingScanningFailed: false,
+  isScanningFailed: false,
+  isTraining: false,
+  isTrainingFailed: false,
   currentStateAttack: undefined,
   askScanOpen: false,
   detail: "",
@@ -74,6 +78,10 @@ const attackProcessReducer = (
         isAttackFinalTargetSuccess: false,
         currentHostLabel: undefined,
         currentStateAttack: undefined,
+        isScanning: false,
+        isScanningFailed: false,
+        isTraining: false,
+        isTrainingFailed: false,
       };
     case AttackProcessActionTypes.START_ATTACK_FAILED:
       return {
@@ -112,7 +120,35 @@ const attackProcessReducer = (
           })}: ${action.payload.Detail}\n`
         ),
       };
+    case AttackProcessActionTypes.SCANING_FAILED:
+      return {
+        ...state,
+        isScanningFailed: true,
+      };
 
+    case AttackProcessActionTypes.SCANING_SUCCESS_ALL:
+      return {
+        ...state,
+        isScanning: false,
+      };
+    case AttackProcessActionTypes.TRANING:
+      return {
+        ...state,
+        isTraining: true,
+      };
+    case AttackProcessActionTypes.TRANING_SUCCESS:
+      return {
+        ...state,
+        isTraining: false,
+        isTrainingFailed: false,
+        attackPath: action.payload.path,
+      };
+    case AttackProcessActionTypes.TRANING_FAILED:
+      return {
+        ...state,
+        isTraining: false,
+        isTrainingFailed: true,
+      };
     // Scanning Progress
     default:
       return state;

@@ -24,9 +24,12 @@ import { SocketEvents } from "./utils/enums/SocketEvents";
 import {
   AddDetailPayload,
   ScanSuccessPayload,
-  StartAttackSuccessPayload,
+  TrainingSuccessPayload,
 } from "./redux/payload-types/AttackProcessPayloadTypes";
 import AlertModal from "./components/AlertModal/AlertModal";
+import StopCircleIcon from "@mui/icons-material/StopCircle";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import SaveIcon from "@mui/icons-material/Save";
 // Socket io client
 const App = () => {
   const socket = useContext(SocketContext);
@@ -68,6 +71,10 @@ const App = () => {
     startScaning,
     scanSuccess,
     scanFailed,
+    scanSuccessAll,
+    trainSuccess,
+    startTraining,
+    trainFailed,
   } = bindActionCreators(attackProcessActionCreators, dispatch);
 
   useEffect(() => {
@@ -87,6 +94,34 @@ const App = () => {
     socket?.on(SocketEvents.SCAN_SUCCESS, (payload: ScanSuccessPayload) => {
       console.log("Scan sucessfully");
       scanSuccess(payload);
+    });
+
+    socket?.on(SocketEvents.SCAN_SUCCESS_ALL, () => {
+      console.log("Scan sucessfully all");
+      scanSuccessAll();
+    });
+
+    socket?.on(SocketEvents.TRAINING, () => {
+      console.log("startTraining");
+      startTraining();
+    });
+
+    socket?.on(
+      SocketEvents.TRAINING_SUCCESS,
+      (payload: TrainingSuccessPayload) => {
+        console.log("Train success");
+        trainSuccess(payload);
+      }
+    );
+
+    socket?.on(SocketEvents.TRAINING_FAILED, () => {
+      console.log("Train failed");
+      trainFailed();
+    });
+
+    socket?.on(SocketEvents.ATTACKING, () => {
+      console.log("Attacking");
+      trainFailed();
     });
   }, [fileContent]);
 
@@ -110,76 +145,96 @@ const App = () => {
               saveDraftHosts();
             }}
           >
-            Lưu lại
+            <Typography variant="body2" marginRight="10px">
+              Lưu lại
+            </Typography>
+            <SaveIcon />
           </Button>
-          <Button
-            sx={{ marginLeft: "5px" }}
-            variant="contained"
-            onClick={(e) => {
-              let scanConfigFile = ExportScanConfigFile(hostsState.hosts);
-              if (scanConfigFile === null) {
-                updateHostFailed();
-              } else {
-                let topoContent = ExportToTopologyFile(
-                  hostsState.hosts,
-                  linksState.links,
-                  typeAttack
-                );
-                let connectedMap = ExportToConnectedMap(
-                  hostsState.hosts,
-                  linksState.links
-                );
-
-                let checkAllContainReport = true;
-                // Send data to server to save and run
-                //  Check if reports are in redux store
-                if (attackProcessState.processes.length > 0) {
-                  attackProcessState.processes.forEach((process) => {
-                    if (process.scanReportId === undefined) {
-                      console.log("No Scan report");
-                      checkAllContainReport = false;
-                    }
-                  });
-                } else {
-                  console.log("No Scan report");
-                  checkAllContainReport = false;
-                }
-
-                if (checkAllContainReport) {
-                  startAttackPending({
-                    connectedMap: connectedMap,
-                    scanConfigFile: scanConfigFile,
-                    //@ts-ignore
-                    scanReportId: attackProcessState.processes.map(
-                      (process) => {
-                        return {
-                          hostLabel: process.hostLable,
-                          reportId: process.scanReportId,
-                        };
-                      }
-                    ),
-                    topologyFile: topoContent,
-                  });
-                } else {
-                  toogleAskScan();
-                  setTopologyFile(topoContent);
-                  setConfigScanFile(scanConfigFile);
-                  setConnectedMap(connectedMap);
-                }
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              disabled={
+                attackProcessState.isAttacking || attackProcessState.isScanning
               }
-            }}
-          >
-            Tấn công
-          </Button>
-          <Button
-            sx={{ marginLeft: "5px" }}
-            variant="contained"
-            onClick={(e) => {
-              saveDraftHosts();
-            }}
-          >
-            Dừng
-          </Button>
+              sx={{ marginLeft: "5px" }}
+              variant="contained"
+              onClick={(e) => {
+                let scanConfigFile = ExportScanConfigFile(hostsState.hosts);
+                if (scanConfigFile === null) {
+                  updateHostFailed();
+                } else {
+                  let topoContent = ExportToTopologyFile(
+                    hostsState.hosts,
+                    linksState.links,
+                    typeAttack
+                  );
+                  let connectedMap = ExportToConnectedMap(
+                    hostsState.hosts,
+                    linksState.links
+                  );
+
+                  let checkAllContainReport = true;
+                  // Send data to server to save and run
+                  //  Check if reports are in redux store
+                  if (attackProcessState.processes.length > 0) {
+                    attackProcessState.processes.forEach((process) => {
+                      if (process.scanReportId === undefined) {
+                        console.log("No Scan report");
+                        checkAllContainReport = false;
+                      }
+                    });
+                  } else {
+                    console.log("No Scan report");
+                    checkAllContainReport = false;
+                  }
+
+                  if (checkAllContainReport) {
+                    startAttackPending({
+                      connectedMap: connectedMap,
+                      scanConfigFile: scanConfigFile,
+                      //@ts-ignore
+                      scanReportId: attackProcessState.processes.map(
+                        (process) => {
+                          return {
+                            hostLabel: process.hostLable,
+                            reportId: process.scanReportId,
+                          };
+                        }
+                      ),
+                      topologyFile: topoContent,
+                    });
+                  } else {
+                    toogleAskScan();
+                    setTopologyFile(topoContent);
+                    setConfigScanFile(scanConfigFile);
+                    setConnectedMap(connectedMap);
+                  }
+                }
+              }}
+            >
+              <Typography variant="body2" marginRight="10px">
+                Tấn công
+              </Typography>
+              <PlayArrowIcon />
+            </Button>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Button
+              sx={{ marginLeft: "5px" }}
+              variant="contained"
+              onClick={(e) => {
+                saveDraftHosts();
+              }}
+              disabled={
+                !attackProcessState.isScanning &&
+                !attackProcessState.isAttacking
+              }
+            >
+              <Typography variant="body2" marginRight="10px">
+                Dừng
+              </Typography>
+              <StopCircleIcon />
+            </Button>
+          </Box>
           <Box
             sx={{
               display: "flex",

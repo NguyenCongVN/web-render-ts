@@ -5,6 +5,7 @@ import {
   ScanSuccessPayload,
   StartAttackPendingPayload,
   StartAttackSuccessPayload,
+  TrainingSuccessPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 
 export const toogleAskScan = () => {
@@ -45,6 +46,12 @@ export const scanSuccess = (payload: ScanSuccessPayload) => {
   };
 };
 
+export const scanSuccessAll = () => {
+  return {
+    type: AttackProcessActionTypes.SCANING_SUCCESS_ALL,
+  };
+};
+
 export const scanFailed = (payload: ScanFailedPayload) => {
   return {
     type: AttackProcessActionTypes.SCANING_FAILED,
@@ -56,5 +63,24 @@ export const addDetailProcess = (payload: AddDetailPayload) => {
   return {
     type: AttackProcessActionTypes.ADD_DETAIL_PROCESS,
     payload: payload,
+  };
+};
+
+export const startTraining = () => {
+  return {
+    type: AttackProcessActionTypes.TRANING,
+  };
+};
+
+export const trainSuccess = (payload: TrainingSuccessPayload) => {
+  return {
+    type: AttackProcessActionTypes.TRANING_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const trainFailed = () => {
+  return {
+    type: AttackProcessActionTypes.TRANING_FAILED,
   };
 };

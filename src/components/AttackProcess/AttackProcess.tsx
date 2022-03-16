@@ -44,6 +44,46 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
     (rootState: RootState) => rootState.attackProcess.processes
   );
 
+  const attackState = useSelector(
+    (rootState: RootState) => rootState.attackProcess
+  );
+
+  const rederAttackState = () => {
+    if (attackState.isStartingAttack) {
+      return "Đang bắt đầu";
+    }
+
+    if (attackState.isScanningFailed) {
+      return "Bắt đầu dò quét lỗi";
+    }
+
+    if (attackState.isStartingScanning) {
+      return "Đang bắt đầu dò quét";
+    }
+
+    if (attackState.isScanning) {
+      return "Đang dò quét";
+    }
+
+    if (attackState.isScanning) {
+      return "Đang dò quét";
+    }
+
+    if (attackState.isTraining) {
+      return "Đang huấn luyện mô hình";
+    }
+
+    if (attackState.isTrainingFailed) {
+      return "Huấn luyện mô hình lỗi";
+    }
+
+    if (attackState.isAttacking) {
+      return "Đang tấn công";
+    }
+
+    return "Chưa bắt đầu";
+  };
+
   return (
     <Box sx={{ position: "relative", bottom: "0" }}>
       <LinearProgress
@@ -65,7 +105,7 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
             id="nested-list-subheader"
             sx={{ bgcolor: "grey.A100", display: "flex" }}
           >
-            Tiến trình tấn công
+            Tiến trình tấn công : {rederAttackState()}
             <Button
               sx={{ margin: "auto 0 auto auto", height: "70%" }}
               size="small"
@@ -83,7 +123,7 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
           in={open}
           timeout="auto"
           unmountOnExit
-          sx={{ minHeight: "25rem", display: "flex", flex: 1 }}
+          sx={{ display: "flex", flex: 1 }}
         >
           <AttackProcessResultTab />
         </Collapse>

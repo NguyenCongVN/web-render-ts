@@ -6,6 +6,7 @@ import {
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
   AddDetailProcessAction,
+  ScanningFailedAction,
   ScanningSuccessAction,
   StartAttackPendingAction,
 } from "../actions/AttackProcessActions";
@@ -16,6 +17,7 @@ import { socket } from "../../context/socket";
 import { SocketEvents } from "../../utils/enums/SocketEvents";
 import {
   AddDetailPayload,
+  ScanFailedPayload,
   ScanSuccessPayload,
   StartAttackPendingPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
@@ -24,6 +26,7 @@ import {
   IndividualAttackStatus,
 } from "../reducers/AttackProcessReducer";
 import { Host } from "../../utils/classes/Host";
+import { convertLabel } from "../../utils/file_utils/StringUtil";
 export const getAttackProcesses = (state: RootState) =>
   state.attackProcess.processes;
 export const getHostStates = (state: RootState) => state.hosts.hosts;
@@ -33,14 +36,15 @@ function initialAttackProcess(
   processes: IndividualAttackState[],
   scanReports: { hostLabel: string; reportId: string | undefined }[]
 ) {
+  processes = [];
   for (var i = 0; i < hosts.length; i++) {
     // eslint-disable-next-line no-loop-func
     if (scanReports.length > 0) {
       // eslint-disable-next-line no-loop-func
       scanReports.forEach((report) => {
-        if (report.hostLabel === hosts[i].label.text) {
+        if (report.hostLabel === convertLabel(hosts[i].label.text)) {
           processes.push({
-            hostLable: hosts[i].label.text,
+            hostLable: convertLabel(hosts[i].label.text),
             meterpreterGot: [],
             progress: [],
             scanReportId: report.reportId,
@@ -51,7 +55,7 @@ function initialAttackProcess(
     } else {
       if (!hosts[i].IsRouter && !hosts[i].IsSwitch && !hosts[i].isAttacker)
         processes.push({
-          hostLable: hosts[i].label.text,
+          hostLable: convertLabel(hosts[i].label.text),
           meterpreterGot: [],
           progress: [],
           scanReportId: undefined,
@@ -191,9 +195,40 @@ function* watchOnScanSuccess() {
   yield takeEvery(AttackProcessActionTypes.SCANING_SUCCESS, onScanSuccess);
 }
 
+// Scan Failed
+
+function addScanFailedHost(
+  payload: ScanFailedPayload,
+  processes: IndividualAttackState[]
+) {
+  for (var i = 0; i < processes.length; i++) {
+    if (processes[i].hostLable === payload.hostLabel) {
+      processes[i].progress.push({
+        time: new Date(),
+        detail: "Scan Failed",
+        status: IndividualAttackStatus.scanfinish,
+      });
+
+      processes[i].scanReportId = undefined;
+    }
+  }
+}
+
+function* onScanFailed({ payload }: ScanningFailedAction): any {
+  try {
+    const processes = yield select(getAttackProcesses);
+    yield call(addScanFailedHost, payload, processes);
+  } catch (error) {}
+}
+
+function* watchOnScanFailed() {
+  yield takeEvery(AttackProcessActionTypes.SCANING_FAILED, onScanFailed);
+}
+
 export default function* attackProcessesSaga() {
   yield all([fork(watchOnStartAttack)]);
   yield all([fork(watchOnAddData)]);
   yield all([fork(watchOnScanning)]);
   yield all([fork(watchOnScanSuccess)]);
+  yield all([fork(watchOnScanFailed)]);
 }

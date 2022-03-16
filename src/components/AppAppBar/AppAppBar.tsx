@@ -9,7 +9,7 @@ const ButtonAppBar = () => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Topology Exporter
+            AutoPentester
           </Typography>
         </Toolbar>
       </AppBar>

@@ -27,4 +27,8 @@ export interface ScanFailedPayload {
   reason: string;
 }
 
+export interface TrainingSuccessPayload {
+  path: string;
+}
+
 export {};
