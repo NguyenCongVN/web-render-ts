@@ -29,7 +29,7 @@ export interface AttackProcessState {
   isStartAttackFailed: boolean;
   isAttacking: boolean;
   isScanning: boolean;
-  isAttackFinalTargetSuccess: boolean;
+  isAttackFinalTargetSuccess: boolean | undefined;
   isStartingScanning: boolean;
   isScanningFailed: boolean;
   isTraining: boolean;
@@ -43,7 +43,7 @@ export interface AttackProcessState {
 
 const initialState: AttackProcessState = {
   processes: [],
-  isAttackFinalTargetSuccess: false,
+  isAttackFinalTargetSuccess: undefined,
   isScanning: false,
   isAttacking: false,
   currentHostLabel: undefined,
@@ -82,6 +82,7 @@ const attackProcessReducer = (
         isScanningFailed: false,
         isTraining: false,
         isTrainingFailed: false,
+        processes: [],
       };
     case AttackProcessActionTypes.START_ATTACK_FAILED:
       return {
@@ -148,6 +149,34 @@ const attackProcessReducer = (
         ...state,
         isTraining: false,
         isTrainingFailed: true,
+      };
+
+    case AttackProcessActionTypes.ATTACKING:
+      return {
+        ...state,
+        isAttacking: true,
+      };
+
+    case AttackProcessActionTypes.ATTACK_STATE_CHANGE:
+      return {
+        ...state,
+        currentHostLabel:
+          action.payload.currentHostLabel !== ""
+            ? action.payload.currentHostLabel
+            : state.currentHostLabel,
+        currentStateAttack: action.payload.currentState,
+      };
+    case AttackProcessActionTypes.ATTACK_FAILED:
+      return {
+        ...state,
+        isAttacking: false,
+        isAttackFinalTargetSuccess: false,
+      };
+    case AttackProcessActionTypes.ATTACK_SUCCESS:
+      return {
+        ...state,
+        isAttacking: false,
+        isAttackFinalTargetSuccess: true,
       };
     // Scanning Progress
     default:

@@ -3,7 +3,7 @@ export const CalculateProcessPercent = (
   attackProcesses: IndividualAttackState[]
 ): number => {
   let numberAttackProcess = attackProcesses.length;
-  let baseScore = 100 / (4 * numberAttackProcess);
+  let baseScore = 100 / (3 * numberAttackProcess);
 
   let totalScore = 0;
   attackProcesses.forEach((attackProcess) => {

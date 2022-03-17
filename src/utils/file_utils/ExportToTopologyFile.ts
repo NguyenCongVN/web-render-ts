@@ -240,9 +240,15 @@ export const ExportScanConfigFile = (hosts: Host[]): string | null => {
           hosts[i].NetworkIP
         },${hosts[i].ScanIP},isAttacker\n`;
       } else {
-        scanConfigString += `${convertLabel(hosts[i].label.text)},${
-          hosts[i].NetworkIP
-        },${hosts[i].ScanIP},notIsAttacker\n`;
+        if (hosts[i].isTarget) {
+          scanConfigString += `${convertLabel(hosts[i].label.text)},${
+            hosts[i].NetworkIP
+          },${hosts[i].ScanIP},isTarget\n`;
+        } else {
+          scanConfigString += `${convertLabel(hosts[i].label.text)},${
+            hosts[i].NetworkIP
+          },${hosts[i].ScanIP},notIsAttacker\n`;
+        }
       }
     }
   }
@@ -254,10 +260,38 @@ export const ExportToConnectedMap = (hosts: Host[], links: Link[]): string => {
   let connectedDict = GetConnectedDict(links, hosts);
   let connectedIPDict: { [hostName: string]: string[] } = {};
   for (const [hostName, connectedHosts] of Object.entries(connectedDict)) {
-    connectedIPDict[convertLabel(hostName)] = connectedHosts.map((connectedHost) => {
-      return connectedHost.NetworkIP;
-    });
+    connectedIPDict[convertLabel(hostName)] = connectedHosts.map(
+      (connectedHost) => {
+        return connectedHost.NetworkIP;
+      }
+    );
   }
   let json = JSON.stringify(connectedIPDict);
+  return json;
+};
+
+export const ExportToReachableMap = (hosts: Host[], links: Link[]): string => {
+  let connectedDict = GetConnectedDict(links, hosts);
+  let reachAbleDict: { [hostName: string]: string[] } = {};
+  for (const [hostName, connectedHosts] of Object.entries(connectedDict)) {
+    connectedHosts.forEach((host) => {
+      if (reachAbleDict[convertLabel(host.label.text)] === undefined) {
+        reachAbleDict[convertLabel(host.label.text)] = [];
+      }
+      let hostFound = GetHostFromLabel(hosts, hostName);
+      if (hostFound) {
+        if (
+          reachAbleDict[convertLabel(host.label.text)].indexOf(
+            hostFound.NetworkIP
+          ) === -1
+        ) {
+          reachAbleDict[convertLabel(host.label.text)].push(
+            hostFound.NetworkIP
+          );
+        }
+      }
+    });
+  }
+  let json = JSON.stringify(reachAbleDict);
   return json;
 };

@@ -48,7 +48,7 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
     (rootState: RootState) => rootState.attackProcess
   );
 
-  const rederAttackState = () => {
+  const renderAttackState = () => {
     if (attackState.isStartingAttack) {
       return "Đang bắt đầu";
     }
@@ -81,6 +81,14 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
       return "Đang tấn công";
     }
 
+    if (attackState.isAttackFinalTargetSuccess) {
+      return "Tấn công thành công";
+    }
+
+    if (!attackState.isAttacking && !attackState.isAttackFinalTargetSuccess) {
+      return "Tấn công lỗi";
+    }
+
     return "Chưa bắt đầu";
   };
 
@@ -105,7 +113,7 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
             id="nested-list-subheader"
             sx={{ bgcolor: "grey.A100", display: "flex" }}
           >
-            Tiến trình tấn công : {rederAttackState()}
+            Tiến trình tấn công : {renderAttackState()}
             <Button
               sx={{ margin: "auto 0 auto auto", height: "70%" }}
               size="small"

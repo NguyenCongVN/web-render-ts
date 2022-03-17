@@ -6,6 +6,8 @@ import {
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
   AddDetailProcessAction,
+  GotMeterpreterAction,
+  GotShellAction,
   ScanningFailedAction,
   ScanningSuccessAction,
   StartAttackPendingAction,
@@ -17,6 +19,8 @@ import { socket } from "../../context/socket";
 import { SocketEvents } from "../../utils/enums/SocketEvents";
 import {
   AddDetailPayload,
+  GotMeterpreterPayload,
+  GotShellPayload,
   ScanFailedPayload,
   ScanSuccessPayload,
   StartAttackPendingPayload,
@@ -36,7 +40,7 @@ function initialAttackProcess(
   processes: IndividualAttackState[],
   scanReports: { hostLabel: string; reportId: string | undefined }[]
 ) {
-  processes = [];
+  // processes = [];
   for (var i = 0; i < hosts.length; i++) {
     // eslint-disable-next-line no-loop-func
     if (scanReports.length > 0) {
@@ -225,10 +229,72 @@ function* watchOnScanFailed() {
   yield takeEvery(AttackProcessActionTypes.SCANING_FAILED, onScanFailed);
 }
 
+// Got Shell
+
+function addShell(
+  payload: GotShellPayload,
+  processes: IndividualAttackState[]
+) {
+  for (var i = 0; i < processes.length; i++) {
+    if (processes[i].hostLable === payload.hostLabel) {
+      processes[i].progress.push({
+        time: new Date(),
+        detail: "Got Shell",
+        status: IndividualAttackStatus.gotShell,
+      });
+
+      processes[i].shellNumberGot.push(payload.shellId);
+    }
+  }
+}
+
+function* onGotShell({ payload }: GotShellAction): any {
+  try {
+    const processes = yield select(getAttackProcesses);
+    yield call(addShell, payload, processes);
+  } catch (error) {}
+}
+
+function* watchOnGotShell() {
+  yield takeEvery(AttackProcessActionTypes.GOT_SHELL, onGotShell);
+}
+
+// Got Meterpreter
+
+function addMeterpreter(
+  payload: GotMeterpreterPayload,
+  processes: IndividualAttackState[]
+) {
+  for (var i = 0; i < processes.length; i++) {
+    if (processes[i].hostLable === payload.hostLabel) {
+      processes[i].progress.push({
+        time: new Date(),
+        detail: "Got Meterpreter",
+        status: IndividualAttackStatus.gotMeterpreter,
+      });
+
+      processes[i].meterpreterGot.push(payload.meterpreterId);
+    }
+  }
+}
+
+function* onGotMeterpreter({ payload }: GotMeterpreterAction): any {
+  try {
+    const processes = yield select(getAttackProcesses);
+    yield call(addMeterpreter, payload, processes);
+  } catch (error) {}
+}
+
+function* watchOnGotMeterpreter() {
+  yield takeEvery(AttackProcessActionTypes.GOT_METERPRETER, onGotMeterpreter);
+}
+
 export default function* attackProcessesSaga() {
   yield all([fork(watchOnStartAttack)]);
   yield all([fork(watchOnAddData)]);
   yield all([fork(watchOnScanning)]);
   yield all([fork(watchOnScanSuccess)]);
   yield all([fork(watchOnScanFailed)]);
+  yield all([fork(watchOnGotShell)]);
+  yield all([fork(watchOnGotMeterpreter)]);
 }

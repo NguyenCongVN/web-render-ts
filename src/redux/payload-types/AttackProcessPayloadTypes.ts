@@ -3,6 +3,7 @@ export interface StartAttackPendingPayload {
   scanConfigFile: string;
   topologyFile: string;
   connectedMap: string;
+  reachableMap: string;
   scanReportId: { hostLabel: string; reportId: string | undefined }[];
 }
 
@@ -31,4 +32,21 @@ export interface TrainingSuccessPayload {
   path: string;
 }
 
-export {};
+export interface AttackStateChangePayload {
+  currentState: number;
+  currentHostLabel: string;
+}
+
+export interface AttackFaiedPayload {
+  reason: string;
+}
+
+export interface GotShellPayload {
+  shellId: string;
+  hostLabel: string;
+}
+
+export interface GotMeterpreterPayload {
+  meterpreterId: string;
+  hostLabel: string;
+}

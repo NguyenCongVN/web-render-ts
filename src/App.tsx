@@ -16,6 +16,7 @@ import {
   ExportToTopologyFile,
   ExportScanConfigFile,
   ExportToConnectedMap,
+  ExportToReachableMap,
 } from "./utils/file_utils/ExportToTopologyFile";
 import { RootState } from "./redux/reducers/RootReducer";
 import { TypeAttack } from "./utils/enums/TypeAttacks";
@@ -23,6 +24,9 @@ import { SocketContext } from "./context/socket";
 import { SocketEvents } from "./utils/enums/SocketEvents";
 import {
   AddDetailPayload,
+  AttackStateChangePayload,
+  GotMeterpreterPayload,
+  GotShellPayload,
   ScanSuccessPayload,
   TrainingSuccessPayload,
 } from "./redux/payload-types/AttackProcessPayloadTypes";
@@ -50,6 +54,9 @@ const App = () => {
   const [connectedMap, setConnectedMap] = useState<string | undefined>(
     undefined
   );
+  const [reachableMap, setReachableMap] = useState<string | undefined>(
+    undefined
+  );
 
   const hostsState = useSelector((state: RootState) => state.hosts);
   const linksState = useSelector((state: RootState) => state.links);
@@ -75,6 +82,12 @@ const App = () => {
     trainSuccess,
     startTraining,
     trainFailed,
+    attacking,
+    attackFailed,
+    attackStateChanged,
+    attackSuccess,
+    gotShell,
+    gotMeterpreter,
   } = bindActionCreators(attackProcessActionCreators, dispatch);
 
   useEffect(() => {
@@ -121,8 +134,39 @@ const App = () => {
 
     socket?.on(SocketEvents.ATTACKING, () => {
       console.log("Attacking");
-      trainFailed();
+      attacking();
     });
+
+    socket?.on(SocketEvents.ATTACKING_SUCCESS, () => {
+      console.log("Attack Success");
+      attackSuccess();
+    });
+
+    socket?.on(SocketEvents.ATTACK_FAILED, () => {
+      console.log("Attack Failed");
+      attackFailed();
+    });
+
+    socket?.on(
+      SocketEvents.ATTACK_STATE_CHANGE,
+      (payload: AttackStateChangePayload) => {
+        console.log("Attack State Changed");
+        attackStateChanged(payload);
+      }
+    );
+
+    socket?.on(SocketEvents.GOT_SHELL, (payload: GotShellPayload) => {
+      console.log("Got Shell");
+      gotShell(payload);
+    });
+
+    socket?.on(
+      SocketEvents.GOT_METERPRETER,
+      (payload: GotMeterpreterPayload) => {
+        console.log("Got Meterpreter");
+        gotMeterpreter(payload);
+      }
+    );
   }, [fileContent]);
 
   return (
@@ -158,6 +202,11 @@ const App = () => {
               sx={{ marginLeft: "5px" }}
               variant="contained"
               onClick={(e) => {
+                let reachableMap = ExportToReachableMap(
+                  hostsState.hosts,
+                  linksState.links
+                );
+
                 let scanConfigFile = ExportScanConfigFile(hostsState.hosts);
                 if (scanConfigFile === null) {
                   updateHostFailed();
@@ -191,6 +240,7 @@ const App = () => {
                     startAttackPending({
                       connectedMap: connectedMap,
                       scanConfigFile: scanConfigFile,
+                      reachableMap: reachableMap,
                       //@ts-ignore
                       scanReportId: attackProcessState.processes.map(
                         (process) => {
@@ -207,6 +257,7 @@ const App = () => {
                     setTopologyFile(topoContent);
                     setConfigScanFile(scanConfigFile);
                     setConnectedMap(connectedMap);
+                    setReachableMap(reachableMap);
                   }
                 }
               }}
@@ -221,9 +272,7 @@ const App = () => {
             <Button
               sx={{ marginLeft: "5px" }}
               variant="contained"
-              onClick={(e) => {
-                saveDraftHosts();
-              }}
+              onClick={(e) => {}}
               disabled={
                 !attackProcessState.isScanning &&
                 !attackProcessState.isAttacking
@@ -267,6 +316,7 @@ const App = () => {
           connectedMap={connectedMap}
           scanConfigFile={configScanFile}
           topoContent={topologyFile}
+          reachableMap={reachableMap}
         ></AlertModal>
       </Stack>
     </Box>

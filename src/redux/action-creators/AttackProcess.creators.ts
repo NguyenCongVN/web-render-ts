@@ -6,6 +6,9 @@ import {
   StartAttackPendingPayload,
   StartAttackSuccessPayload,
   TrainingSuccessPayload,
+  AttackStateChangePayload,
+  GotShellPayload,
+  GotMeterpreterPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 
 export const toogleAskScan = () => {
@@ -82,5 +85,44 @@ export const trainSuccess = (payload: TrainingSuccessPayload) => {
 export const trainFailed = () => {
   return {
     type: AttackProcessActionTypes.TRANING_FAILED,
+  };
+};
+
+export const attacking = () => {
+  return {
+    type: AttackProcessActionTypes.ATTACKING,
+  };
+};
+
+export const attackSuccess = () => {
+  return {
+    type: AttackProcessActionTypes.ATTACK_SUCCESS,
+  };
+};
+
+export const attackFailed = () => {
+  return {
+    type: AttackProcessActionTypes.ATTACK_FAILED,
+  };
+};
+
+export const attackStateChanged = (payload: AttackStateChangePayload) => {
+  return {
+    type: AttackProcessActionTypes.ATTACK_STATE_CHANGE,
+    payload: payload,
+  };
+};
+
+export const gotShell = (payload: GotShellPayload) => {
+  return {
+    type: AttackProcessActionTypes.GOT_SHELL,
+    payload: payload,
+  };
+};
+
+export const gotMeterpreter = (payload: GotMeterpreterPayload) => {
+  return {
+    type: AttackProcessActionTypes.GOT_METERPRETER,
+    payload: payload,
   };
 };

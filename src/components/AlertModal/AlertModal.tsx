@@ -12,12 +12,13 @@ import { SocketContext } from "../../context/socket";
 import { RootState } from "../../redux/reducers/RootReducer";
 import { StartAttackSuccessPayload } from "../../redux/payload-types/AttackProcessPayloadTypes";
 import { SocketEvents } from "../../utils/enums/SocketEvents";
-
+import clone from "clone";
 interface AlertProps {
   open: boolean;
   askScan?: boolean;
   connectedMap?: string;
   scanConfigFile?: string;
+  reachableMap?: string;
   topoContent?: string;
 }
 
@@ -26,6 +27,7 @@ export default function AlertDialog({
   askScan,
   connectedMap,
   scanConfigFile,
+  reachableMap,
   topoContent,
 }: AlertProps) {
   const attackProcessState = useSelector(
@@ -35,10 +37,10 @@ export default function AlertDialog({
   const dispatch = useDispatch();
 
   const { ToogleOpenAlert } = bindActionCreators(hostActionCreators, dispatch);
-  const {
-    toogleAskScan,
-    startAttackPending,
-  } = bindActionCreators(attackProcessActionCreators, dispatch);
+  const { toogleAskScan, startAttackPending } = bindActionCreators(
+    attackProcessActionCreators,
+    dispatch
+  );
 
   const handleClose = () => {
     console.log(open);
@@ -71,15 +73,18 @@ export default function AlertDialog({
               <Button
                 onClick={() => {
                   handleClose();
-                  console.log(connectedMap);
-                  console.log(scanConfigFile);
-                  console.log(topoContent);
-                  if (connectedMap && scanConfigFile && topoContent) {
+                  if (
+                    connectedMap &&
+                    scanConfigFile &&
+                    topoContent &&
+                    reachableMap
+                  ) {
                     startAttackPending({
                       connectedMap: connectedMap,
                       scanConfigFile: scanConfigFile,
+                      reachableMap: reachableMap,
                       //@ts-ignore
-                      scanReportId: attackProcessState.processes.map(
+                      scanReportId: clone(attackProcessState).processes.map(
                         (process) => {
                           return {
                             hostLabel: process.hostLable,

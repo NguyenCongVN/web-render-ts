@@ -4,6 +4,7 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { Button } from "@mui/material";
+import ListDividerResult from "../ListDividerResult/ListDividerResult";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -21,11 +22,10 @@ function TabPanel(props: TabPanelProps) {
       id={`vertical-tabpanel-${index}`}
       aria-labelledby={`vertical-tab-${index}`}
       {...other}
+      style={{ display: value !== index ? "none" : "flex", flex: 1 }}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
+        <Box sx={{ display: "flex", flex: 1 }}>{children}</Box>
       )}
     </div>
   );
@@ -52,6 +52,7 @@ export default function VerticalTabs() {
           bgcolor: "background.paper",
           display: "flex",
           height: "80%",
+          flex: 1,
         }}
       >
         <Tabs
@@ -66,17 +67,17 @@ export default function VerticalTabs() {
           <Tab label="Meterpreter" {...a11yProps(1)} />
         </Tabs>
         <TabPanel value={value} index={0}>
-          Item One
+          <ListDividerResult shell />
         </TabPanel>
         <TabPanel value={value} index={1}>
-          Item Two
+          <ListDividerResult meterpreter />
         </TabPanel>
       </Box>
       <Box
         sx={{
           display: "flex",
           justifyContent: "right",
-          marginTop : '20px'
+          marginTop: "20px",
         }}
       >
         <Button

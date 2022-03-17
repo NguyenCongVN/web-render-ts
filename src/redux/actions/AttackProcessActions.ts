@@ -1,6 +1,9 @@
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
   AddDetailPayload,
+  AttackStateChangePayload,
+  GotMeterpreterPayload,
+  GotShellPayload,
   ScanFailedPayload,
   ScanSuccessPayload,
   StartAttackPendingPayload,
@@ -61,6 +64,33 @@ export interface TrainFailedAction {
   type: AttackProcessActionTypes.TRANING_FAILED;
 }
 
+export interface AttackingAction {
+  type: AttackProcessActionTypes.ATTACKING;
+}
+
+export interface AttackStateChangeAction {
+  type: AttackProcessActionTypes.ATTACK_STATE_CHANGE;
+  payload: AttackStateChangePayload;
+}
+
+export interface AttackFailedAction {
+  type: AttackProcessActionTypes.ATTACK_FAILED;
+}
+
+export interface AttackSuccessAction {
+  type: AttackProcessActionTypes.ATTACK_SUCCESS;
+}
+
+export interface GotShellAction {
+  type: AttackProcessActionTypes.GOT_SHELL;
+  payload: GotShellPayload;
+}
+
+export interface GotMeterpreterAction {
+  type: AttackProcessActionTypes.GOT_METERPRETER;
+  payload: GotMeterpreterPayload;
+}
+
 export type AttackProcessAction =
   | StartAttackPendingAction
   | StartAttackSuccessAction
@@ -72,4 +102,10 @@ export type AttackProcessAction =
   | ScanSuccessAllAction
   | StartTrainingAction
   | TrainSucessAction
-  | TrainFailedAction;
+  | TrainFailedAction
+  | AttackSuccessAction
+  | AttackFailedAction
+  | AttackStateChangeAction
+  | AttackingAction
+  | GotShellAction
+  | GotMeterpreterAction;
