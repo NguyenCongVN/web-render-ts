@@ -1,3 +1,4 @@
+import { CommandType } from "../../utils/enums/CommandType";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import { AttackProcessAction } from "../actions/AttackProcessActions";
 
@@ -8,6 +9,13 @@ export enum IndividualAttackStatus {
   attacking = "attacking",
   gotShell = "gotShell",
   gotMeterpreter = "gotMeterpreter",
+}
+
+export interface Command {
+  type: CommandType;
+  id: string;
+  commandHistory: string[];
+  fullDialog: string;
 }
 
 export interface ProgressAttack {
@@ -39,6 +47,9 @@ export interface AttackProcessState {
   askScanOpen: boolean;
   detail: string;
   attackPath: string | undefined;
+  openComand: boolean;
+  commands: Command[];
+  selectedCommand: Command | undefined;
 }
 
 const initialState: AttackProcessState = {
@@ -57,6 +68,9 @@ const initialState: AttackProcessState = {
   askScanOpen: false,
   detail: "",
   attackPath: undefined,
+  openComand: false,
+  commands: [],
+  selectedCommand: undefined,
 };
 
 const attackProcessReducer = (
@@ -178,7 +192,16 @@ const attackProcessReducer = (
         isAttacking: false,
         isAttackFinalTargetSuccess: true,
       };
-    // Scanning Progress
+    case AttackProcessActionTypes.OPEN_COMMAND:
+      return {
+        ...state,
+        openComand: true,
+      };
+    case AttackProcessActionTypes.CLOSE_COMMAND:
+      return {
+        ...state,
+        openComand: false,
+      };
     default:
       return state;
   }

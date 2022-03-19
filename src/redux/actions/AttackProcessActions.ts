@@ -91,6 +91,14 @@ export interface GotMeterpreterAction {
   payload: GotMeterpreterPayload;
 }
 
+export interface OpenCommandAction {
+  type: AttackProcessActionTypes.OPEN_COMMAND;
+}
+
+export interface CloseCommandAction {
+  type: AttackProcessActionTypes.CLOSE_COMMAND;
+}
+
 export type AttackProcessAction =
   | StartAttackPendingAction
   | StartAttackSuccessAction
@@ -108,4 +116,6 @@ export type AttackProcessAction =
   | AttackStateChangeAction
   | AttackingAction
   | GotShellAction
-  | GotMeterpreterAction;
+  | GotMeterpreterAction
+  | CloseCommandAction
+  | OpenCommandAction;

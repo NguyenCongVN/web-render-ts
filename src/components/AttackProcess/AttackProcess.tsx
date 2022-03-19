@@ -85,7 +85,10 @@ export default function AttackProcess({ hostInput }: NodeDetailProps) {
       return "Tấn công thành công";
     }
 
-    if (!attackState.isAttacking && !attackState.isAttackFinalTargetSuccess) {
+    if (
+      !attackState.isAttacking &&
+      attackState.isAttackFinalTargetSuccess !== undefined
+    ) {
       return "Tấn công lỗi";
     }
 

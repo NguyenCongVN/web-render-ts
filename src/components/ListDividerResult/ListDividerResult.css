@@ -1,0 +1,23 @@
+.context-item {
+  background-color: #f8fcff;
+  border: 0;
+  color: #373a3c;
+  cursor: pointer;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 3px 20px;
+  text-align: inherit;
+  white-space: nowrap;
+  border-color: rgb(85, 83, 83);
+}
+
+.context-item:hover {
+    background-color: #3b9ce2;
+    color: #e4ebf0;
+    border-radius: 5px;
+}
+
+.context {
+  border-style: double;
+  border-width: 1px;
+}

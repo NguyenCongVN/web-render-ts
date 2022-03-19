@@ -126,3 +126,15 @@ export const gotMeterpreter = (payload: GotMeterpreterPayload) => {
     payload: payload,
   };
 };
+
+export const openCommand = () => {
+  return {
+    type: AttackProcessActionTypes.OPEN_COMMAND,
+  };
+};
+
+export const closeCommand = () => {
+  return {
+    type: AttackProcessActionTypes.CLOSE_COMMAND,
+  };
+};

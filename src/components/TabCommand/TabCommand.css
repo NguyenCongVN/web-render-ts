@@ -1,0 +1,8 @@
+.command-tab-panel {
+  background-color: rgb(131, 216, 255);
+  display: flex;
+  flex: 1;
+  width: 100%;
+  border-radius: 4px;
+  overflow-y: auto;
+}

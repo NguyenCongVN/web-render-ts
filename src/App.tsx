@@ -34,6 +34,7 @@ import AlertModal from "./components/AlertModal/AlertModal";
 import StopCircleIcon from "@mui/icons-material/StopCircle";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SaveIcon from "@mui/icons-material/Save";
+import CommandInteractDialog from "./components/CommandInteractDialog/CommandInteractDialog";
 // Socket io client
 const App = () => {
   const socket = useContext(SocketContext);
@@ -319,6 +320,7 @@ const App = () => {
           reachableMap={reachableMap}
         ></AlertModal>
       </Stack>
+      <CommandInteractDialog />
     </Box>
   );
 };

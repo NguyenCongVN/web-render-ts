@@ -12,9 +12,7 @@ import {
   ScanningSuccessAction,
   StartAttackPendingAction,
 } from "../actions/AttackProcessActions";
-import { store } from "../store";
 import { RootState } from "../reducers/RootReducer";
-import clone from "clone";
 import { socket } from "../../context/socket";
 import { SocketEvents } from "../../utils/enums/SocketEvents";
 import {
@@ -26,13 +24,16 @@ import {
   StartAttackPendingPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import {
+  AttackProcessState,
   IndividualAttackState,
   IndividualAttackStatus,
 } from "../reducers/AttackProcessReducer";
 import { Host } from "../../utils/classes/Host";
 import { convertLabel } from "../../utils/file_utils/StringUtil";
+import { CommandType } from "../../utils/enums/CommandType";
 export const getAttackProcesses = (state: RootState) =>
   state.attackProcess.processes;
+export const getAttackProcessState = (state: RootState) => state.attackProcess;
 export const getHostStates = (state: RootState) => state.hosts.hosts;
 
 function initialAttackProcess(
@@ -233,7 +234,8 @@ function* watchOnScanFailed() {
 
 function addShell(
   payload: GotShellPayload,
-  processes: IndividualAttackState[]
+  processes: IndividualAttackState[],
+  attackState: AttackProcessState
 ) {
   for (var i = 0; i < processes.length; i++) {
     if (processes[i].hostLable === payload.hostLabel) {
@@ -244,6 +246,13 @@ function addShell(
       });
 
       processes[i].shellNumberGot.push(payload.shellId);
+
+      attackState.commands.push({
+        type: CommandType.Shell,
+        id: payload.shellId,
+        commandHistory: [],
+        fullDialog: "",
+      });
     }
   }
 }
@@ -251,7 +260,8 @@ function addShell(
 function* onGotShell({ payload }: GotShellAction): any {
   try {
     const processes = yield select(getAttackProcesses);
-    yield call(addShell, payload, processes);
+    const attackState = yield select(getAttackProcessState);
+    yield call(addShell, payload, processes, attackState);
   } catch (error) {}
 }
 
@@ -263,7 +273,8 @@ function* watchOnGotShell() {
 
 function addMeterpreter(
   payload: GotMeterpreterPayload,
-  processes: IndividualAttackState[]
+  processes: IndividualAttackState[],
+  attackState: AttackProcessState
 ) {
   for (var i = 0; i < processes.length; i++) {
     if (processes[i].hostLable === payload.hostLabel) {
@@ -274,6 +285,13 @@ function addMeterpreter(
       });
 
       processes[i].meterpreterGot.push(payload.meterpreterId);
+
+      attackState.commands.push({
+        type: CommandType.Meterpreter,
+        id: payload.meterpreterId,
+        commandHistory: [],
+        fullDialog: "",
+      });
     }
   }
 }
@@ -281,7 +299,8 @@ function addMeterpreter(
 function* onGotMeterpreter({ payload }: GotMeterpreterAction): any {
   try {
     const processes = yield select(getAttackProcesses);
-    yield call(addMeterpreter, payload, processes);
+    const attackState = yield select(getAttackProcessState);
+    yield call(addMeterpreter, payload, processes, attackState);
   } catch (error) {}
 }
 
