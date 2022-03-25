@@ -17,7 +17,7 @@ export default function MaxWidthDialog() {
   );
 
   const dispatch = useDispatch();
-  const { closeCommand } = bindActionCreators(
+  const { closeCommand, sendCommand } = bindActionCreators(
     attackProcessActionCreators,
     dispatch
   );
@@ -54,6 +54,20 @@ export default function MaxWidthDialog() {
             }}
             label=">command"
             variant="standard"
+            onChange={() => {
+              if (attackState.selectedCommand) {
+                sendCommand({
+                  commandId: attackState.selectedCommand.id,
+                  commandLine: {
+                    commandLineId: 1,
+                    commandRequest: "123",
+                    isSending: true,
+                    isFailed: false,
+                    isSuccess: false,
+                  },
+                });
+              }
+            }}
           />
           <Button onClick={handleClose}>Đóng</Button>
         </DialogActions>

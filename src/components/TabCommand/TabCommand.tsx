@@ -4,13 +4,17 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import "./TabCommand.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers/RootReducer";
 import { CommandType } from "../../utils/enums/CommandType";
+import { useEffect } from "react";
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { attackProcessActionCreators } from "../../redux";
 interface TabPanelProps {
   children?: React.ReactNode;
-  index: string;
-  value: string;
+  index: number;
+  value: number;
+  tabId: number;
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -53,7 +57,7 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-function a11yProps(index: string) {
+function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
     "aria-controls": `simple-tabpanel-${index}`,
@@ -61,14 +65,30 @@ function a11yProps(index: string) {
 }
 
 export default function BasicTabs() {
-  const [value, setValue] = React.useState("31");
+  let indexTab = -1;
+
+  const [value, setValue] = React.useState(0);
+
+  const dispatch = useDispatch();
+
+  const { setSelectedCommand } = bindActionCreators(
+    attackProcessActionCreators,
+    dispatch
+  );
 
   const attackProcessState = useSelector(
     (rootState: RootState) => rootState.attackProcess
   );
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    indexTab = -1;
+  }, [attackProcessState.commands.length]);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
+    console.log(newValue);
+    setSelectedCommand(attackProcessState.commands[newValue]);
   };
 
   return (
@@ -91,26 +111,36 @@ export default function BasicTabs() {
               return (
                 <Tab
                   label={`Meterpreter ${command.id}`}
-                  {...a11yProps(command.id)}
+                  {...a11yProps(Number(command.id))}
                 />
               );
             } else {
               return (
-                <Tab label={`Shell ${command.id}`} {...a11yProps(command.id)} />
+                <Tab
+                  label={`Shell ${command.id}`}
+                  {...a11yProps(Number(command.id))}
+                />
               );
             }
           })}
         </Tabs>
       </Box>
 
-      {attackProcessState.commands.map((command) => (
-        <TabPanel value={value} index={command.id}>
-          <Typography variant="caption">
-            {">"}
-            {command.fullDialog}
-          </Typography>
-        </TabPanel>
-      ))}
+      {attackProcessState.commands.map((command) => {
+        indexTab++;
+        return (
+          <TabPanel
+            value={Number(value)}
+            index={indexTab}
+            tabId={Number(command.id)}
+          >
+            <Typography variant="caption">
+              {">"}
+              {command.responseDialog}
+            </Typography>
+          </TabPanel>
+        );
+      })}
     </Box>
   );
 }

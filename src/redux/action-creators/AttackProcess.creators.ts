@@ -1,4 +1,5 @@
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
+import { ReceivedResponseAction } from "../actions/AttackProcessActions";
 import {
   AddDetailPayload,
   ScanFailedPayload,
@@ -9,7 +10,9 @@ import {
   AttackStateChangePayload,
   GotShellPayload,
   GotMeterpreterPayload,
+  SendCommandPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
+import { Command } from "../reducers/AttackProcessReducer";
 
 export const toogleAskScan = () => {
   return {
@@ -136,5 +139,40 @@ export const openCommand = () => {
 export const closeCommand = () => {
   return {
     type: AttackProcessActionTypes.CLOSE_COMMAND,
+  };
+};
+
+export const setSelectedCommand = (payload: Command) => {
+  return {
+    type: AttackProcessActionTypes.SET_CURRENT_COMMAND,
+    payload: payload,
+  };
+};
+
+export const sendCommand = (payload: SendCommandPayload) => {
+  return {
+    type: AttackProcessActionTypes.SEND_COMMAND_PENDING,
+    payload: payload,
+  };
+};
+
+export const sendCommandSuccess = (payload: SendCommandPayload) => {
+  return {
+    type: AttackProcessActionTypes.SEND_COMMAND_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const sendCommandFailed = (payload: SendCommandPayload) => {
+  return {
+    type: AttackProcessActionTypes.SEND_COMMAND_FAILED,
+    payload: payload,
+  };
+};
+
+export const receivedResponse = (payload: ReceivedResponseAction) => {
+  return {
+    type: AttackProcessActionTypes.RECEIVED_RESPONSE,
+    payload: payload,
   };
 };

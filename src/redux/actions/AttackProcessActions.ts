@@ -4,11 +4,14 @@ import {
   AttackStateChangePayload,
   GotMeterpreterPayload,
   GotShellPayload,
+  ReceivedCommandPayload,
   ScanFailedPayload,
   ScanSuccessPayload,
+  SendCommandPayload,
   StartAttackPendingPayload,
   TrainingSuccessPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
+import { Command, CommandLine } from "../reducers/AttackProcessReducer";
 
 export interface ToogleAskScanAction {
   type: AttackProcessActionTypes.TOOGLE_ASK_SCAN;
@@ -99,6 +102,31 @@ export interface CloseCommandAction {
   type: AttackProcessActionTypes.CLOSE_COMMAND;
 }
 
+export interface SetSelectedCommandAction {
+  type: AttackProcessActionTypes.SET_CURRENT_COMMAND;
+  payload: Command;
+}
+
+export interface SendCommandPendingAction {
+  type: AttackProcessActionTypes.SEND_COMMAND_PENDING;
+  payload: SendCommandPayload;
+}
+
+export interface SendCommandSuccessAction {
+  type: AttackProcessActionTypes.SEND_COMMAND_SUCCESS;
+  payload: SendCommandPayload;
+}
+
+export interface SendCommandFailedAction {
+  type: AttackProcessActionTypes.SEND_COMMAND_FAILED;
+  payload: SendCommandPayload;
+}
+
+export interface ReceivedResponseAction {
+  type: AttackProcessActionTypes.RECEIVED_RESPONSE;
+  payload: ReceivedCommandPayload;
+}
+
 export type AttackProcessAction =
   | StartAttackPendingAction
   | StartAttackSuccessAction
@@ -118,4 +146,9 @@ export type AttackProcessAction =
   | GotShellAction
   | GotMeterpreterAction
   | CloseCommandAction
-  | OpenCommandAction;
+  | OpenCommandAction
+  | SetSelectedCommandAction
+  | SendCommandSuccessAction
+  | SendCommandPendingAction
+  | SendCommandFailedAction
+  | ReceivedResponseAction;

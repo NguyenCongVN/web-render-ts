@@ -32,10 +32,7 @@ export default function ListDividers({ shell, meterpreter }: ListDividerProps) {
         return process.shellNumberGot.map((shellGot) => {
           return (
             <Box>
-              <ContextMenuTrigger
-                id={`${process.hostLable}.shell${shellGot}`}
-                holdToDisplay={1000}
-              >
+              <ContextMenuTrigger id={`${process.hostLable}.shell${shellGot}`}>
                 <ListItem button divider>
                   <ListItemText
                     primary={`${process.hostLable} : ${shellGot}`}
@@ -45,10 +42,11 @@ export default function ListDividers({ shell, meterpreter }: ListDividerProps) {
               <ContextMenu
                 id={`${process.hostLable}.shell${shellGot}`}
                 className="context"
+                hideOnLeave
               >
                 <MenuItem
                   onClick={() => {
-                    console.log("1");
+                    openCommand();
                   }}
                   className="context-item"
                 >
@@ -86,11 +84,22 @@ export default function ListDividers({ shell, meterpreter }: ListDividerProps) {
               <ContextMenu
                 id={`${process.hostLable}.meter${meterpreterGot}`}
                 className="context"
+                hideOnLeave
               >
-                <MenuItem onClick={() => {}} className="context-item">
+                <MenuItem
+                  onClick={() => {
+                    openCommand();
+                  }}
+                  className="context-item"
+                >
                   Mở meterpreter
                 </MenuItem>
-                <MenuItem onClick={() => {}} className="context-item">
+                <MenuItem
+                  onClick={() => {
+                    openCommand();
+                  }}
+                  className="context-item"
+                >
                   Mở Command Manager
                 </MenuItem>
               </ContextMenu>

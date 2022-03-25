@@ -11,11 +11,19 @@ export enum IndividualAttackStatus {
   gotMeterpreter = "gotMeterpreter",
 }
 
+export interface CommandLine {
+  commandLineId: number;
+  commandRequest: string;
+  isSending: boolean;
+  isSuccess: boolean;
+  isFailed: boolean;
+}
+
 export interface Command {
   type: CommandType;
   id: string;
-  commandHistory: string[];
-  fullDialog: string;
+  commandHistory: CommandLine[];
+  responseDialog: string[];
 }
 
 export interface ProgressAttack {
@@ -201,6 +209,11 @@ const attackProcessReducer = (
       return {
         ...state,
         openComand: false,
+      };
+    case AttackProcessActionTypes.SET_CURRENT_COMMAND:
+      return {
+        ...state,
+        selectedCommand: action.payload,
       };
     default:
       return state;

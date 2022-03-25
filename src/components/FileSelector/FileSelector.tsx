@@ -4,10 +4,13 @@ import { useRef } from "react";
 
 type FileReaderProps = {
   setFileContent: Function;
+  openNVDData?: boolean;
 };
 
-const FileSelector = ({ setFileContent }: FileReaderProps) => {
-  const inputFile = useRef<HTMLDivElement | null>(null) as React.MutableRefObject<HTMLInputElement>;
+const FileSelector = ({ setFileContent, openNVDData }: FileReaderProps) => {
+  const inputFile = useRef<HTMLDivElement | null>(
+    null
+  ) as React.MutableRefObject<HTMLInputElement>;
 
   function handleChange(selectorFiles: FileList) {
     var fr = new FileReader();
@@ -39,7 +42,7 @@ const FileSelector = ({ setFileContent }: FileReaderProps) => {
           }
         }}
       >
-        Mở File GNS3
+        {openNVDData ? "Cập nhật NVD" : "Mở File GNS3"}
       </Button>
     </div>
   );

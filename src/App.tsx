@@ -35,6 +35,7 @@ import StopCircleIcon from "@mui/icons-material/StopCircle";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SaveIcon from "@mui/icons-material/Save";
 import CommandInteractDialog from "./components/CommandInteractDialog/CommandInteractDialog";
+import { ConvertNVDData } from "./utils/file_utils/ConvertNVDData";
 // Socket io client
 const App = () => {
   const socket = useContext(SocketContext);
@@ -183,6 +184,12 @@ const App = () => {
           }}
         >
           <FileSelector setFileContent={setFileContent} />
+          <FileSelector
+            openNVDData
+            setFileContent={(nvdFileContent: string) => {
+              ConvertNVDData(nvdFileContent);
+            }}
+          />
           <Button
             sx={{ marginLeft: "5px" }}
             variant="contained"

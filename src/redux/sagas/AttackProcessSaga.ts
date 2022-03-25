@@ -1,7 +1,9 @@
-import { put, call, takeEvery, all, fork, select } from "redux-saga/effects";
+import { put, takeEvery, fork, select, call, all } from "redux-saga/effects";
 import {
   startAttackFailed,
   startAttackSuccess,
+  sendCommandSuccess,
+  sendCommandFailed,
 } from "../action-creators/AttackProcess.creators";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
@@ -10,6 +12,7 @@ import {
   GotShellAction,
   ScanningFailedAction,
   ScanningSuccessAction,
+  SendCommandPendingAction,
   StartAttackPendingAction,
 } from "../actions/AttackProcessActions";
 import { RootState } from "../reducers/RootReducer";
@@ -21,10 +24,12 @@ import {
   GotShellPayload,
   ScanFailedPayload,
   ScanSuccessPayload,
+  SendCommandPayload,
   StartAttackPendingPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import {
   AttackProcessState,
+  CommandLine,
   IndividualAttackState,
   IndividualAttackStatus,
 } from "../reducers/AttackProcessReducer";
@@ -91,7 +96,6 @@ function emitStartAttack(payload: StartAttackPendingPayload) {
 function* onStartProcess({ payload }: StartAttackPendingAction): any {
   try {
     const responseStatus = yield call(emitStartAttack, payload);
-    console.log(responseStatus);
     if (responseStatus === "OK") {
       const hostState: Host[] = yield select(getHostStates);
       const processes: IndividualAttackState[] = yield select(
@@ -251,7 +255,7 @@ function addShell(
         type: CommandType.Shell,
         id: payload.shellId,
         commandHistory: [],
-        fullDialog: "",
+        responseDialog: [],
       });
     }
   }
@@ -290,7 +294,7 @@ function addMeterpreter(
         type: CommandType.Meterpreter,
         id: payload.meterpreterId,
         commandHistory: [],
-        fullDialog: "",
+        responseDialog: [],
       });
     }
   }
@@ -308,6 +312,61 @@ function* watchOnGotMeterpreter() {
   yield takeEvery(AttackProcessActionTypes.GOT_METERPRETER, onGotMeterpreter);
 }
 
+// Send Command
+
+function emitSendCommand(payload: SendCommandPayload) {
+  if (socket !== undefined) {
+    let isDone = false;
+    return new Promise((resolve, reject) => {
+      //@ts-ignore
+      socket.emit(
+        SocketEvents.SEND_COMMAND,
+        payload,
+        (responseStatus: string) => {
+          isDone = true;
+          resolve(responseStatus);
+        }
+      );
+      setTimeout(() => {
+        if (!isDone) {
+          throw Error("Timeout");
+        }
+      }, 5000);
+    });
+  }
+}
+
+function addSendingCommand(
+  { commandId, commandLine }: SendCommandPayload,
+  attackState: AttackProcessState
+) {
+  for (var i = 0; i < attackState.commands.length; i++) {
+    if (attackState.commands[i].id === commandId) {
+      attackState.commands[i].commandHistory.push(commandLine);
+    }
+  }
+}
+
+function* onSendCommand({ payload }: SendCommandPendingAction): any {
+  try {
+    const attackState = yield select(getAttackProcessState);
+    yield call(addSendingCommand, payload, attackState);
+    let responseStatus = yield call(emitSendCommand, payload);
+    console.log(responseStatus);
+    if (responseStatus === "OK") {
+      yield put(sendCommandSuccess(payload));
+    } else {
+      yield put(sendCommandFailed(payload));
+    }
+  } catch (error) {
+    yield put(sendCommandFailed(payload));
+  }
+}
+
+function* watchOnSendCommand() {
+  yield takeEvery(AttackProcessActionTypes.SEND_COMMAND_PENDING, onSendCommand);
+}
+
 export default function* attackProcessesSaga() {
   yield all([fork(watchOnStartAttack)]);
   yield all([fork(watchOnAddData)]);
@@ -316,4 +375,7 @@ export default function* attackProcessesSaga() {
   yield all([fork(watchOnScanFailed)]);
   yield all([fork(watchOnGotShell)]);
   yield all([fork(watchOnGotMeterpreter)]);
+  yield all([fork(watchOnSendCommand)]);
+  // sendCommandSuccess
+  // sendCommandFailed
 }
