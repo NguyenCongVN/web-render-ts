@@ -4,6 +4,7 @@ import {
   startAttackSuccess,
   sendCommandSuccess,
   sendCommandFailed,
+  saveCommandSuccess,
 } from "../action-creators/AttackProcess.creators";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
@@ -12,7 +13,9 @@ import {
   GotShellAction,
   ScanningFailedAction,
   ScanningSuccessAction,
+  SendCommandFailedAction,
   SendCommandPendingAction,
+  SendCommandSuccessAction,
   StartAttackPendingAction,
 } from "../actions/AttackProcessActions";
 import { RootState } from "../reducers/RootReducer";
@@ -20,12 +23,14 @@ import { socket } from "../../context/socket";
 import { SocketEvents } from "../../utils/enums/SocketEvents";
 import {
   AddDetailPayload,
+  FailedCommandPayload,
   GotMeterpreterPayload,
   GotShellPayload,
   ScanFailedPayload,
   ScanSuccessPayload,
   SendCommandPayload,
   StartAttackPendingPayload,
+  SuccessCommandPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import {
   AttackProcessState,
@@ -36,9 +41,14 @@ import {
 import { Host } from "../../utils/classes/Host";
 import { convertLabel } from "../../utils/file_utils/StringUtil";
 import { CommandType } from "../../utils/enums/CommandType";
+import clone from "clone";
+import { v1 as uuidv1 } from "uuid";
+
 export const getAttackProcesses = (state: RootState) =>
   state.attackProcess.processes;
 export const getAttackProcessState = (state: RootState) => state.attackProcess;
+export const getAttackProcessCommands = (state: RootState) =>
+  state.attackProcess.commands;
 export const getHostStates = (state: RootState) => state.hosts.hosts;
 
 function initialAttackProcess(
@@ -251,12 +261,12 @@ function addShell(
 
       processes[i].shellNumberGot.push(payload.shellId);
 
-      attackState.commands.push({
+      attackState.commands[payload.shellId] = {
         type: CommandType.Shell,
-        id: payload.shellId,
-        commandHistory: [],
-        responseDialog: [],
-      });
+        commandHistory: {},
+        responseDialog: {},
+        fullDialog: {},
+      };
     }
   }
 }
@@ -290,12 +300,12 @@ function addMeterpreter(
 
       processes[i].meterpreterGot.push(payload.meterpreterId);
 
-      attackState.commands.push({
+      attackState.commands[payload.meterpreterId] = {
         type: CommandType.Meterpreter,
-        id: payload.meterpreterId,
-        commandHistory: [],
-        responseDialog: [],
-      });
+        commandHistory: {},
+        responseDialog: {},
+        fullDialog: {},
+      };
     }
   }
 }
@@ -329,7 +339,7 @@ function emitSendCommand(payload: SendCommandPayload) {
       );
       setTimeout(() => {
         if (!isDone) {
-          throw Error("Timeout");
+          reject("Timeout");
         }
       }, 5000);
     });
@@ -340,31 +350,166 @@ function addSendingCommand(
   { commandId, commandLine }: SendCommandPayload,
   attackState: AttackProcessState
 ) {
-  for (var i = 0; i < attackState.commands.length; i++) {
-    if (attackState.commands[i].id === commandId) {
-      attackState.commands[i].commandHistory.push(commandLine);
-    }
+  try {
+    let attackProcessCommandsClone = clone(attackState.commands);
+    let commandLineId = uuidv1();
+    attackProcessCommandsClone[commandId].commandHistory[`${commandLineId}c`] =
+      commandLine;
+    attackProcessCommandsClone[commandId].fullDialog[`${commandLineId}c`] =
+      commandLine;
+    return {
+      attackCommands: attackProcessCommandsClone,
+      commandLineId: commandLineId,
+    };
+  } catch (error) {
+    return false;
   }
 }
 
 function* onSendCommand({ payload }: SendCommandPendingAction): any {
+  const attackState = yield select(getAttackProcessState);
+  let { attackCommands, commandLineId } = yield call(
+    addSendingCommand,
+    payload,
+    attackState
+  );
+  if (attackCommands) {
+    yield put(saveCommandSuccess(attackCommands));
+  }
   try {
-    const attackState = yield select(getAttackProcessState);
-    yield call(addSendingCommand, payload, attackState);
     let responseStatus = yield call(emitSendCommand, payload);
     console.log(responseStatus);
     if (responseStatus === "OK") {
-      yield put(sendCommandSuccess(payload));
+      yield put(
+        sendCommandSuccess({
+          commandId: payload.commandId,
+          commandLineId: `${commandLineId}c`,
+        })
+      );
     } else {
-      yield put(sendCommandFailed(payload));
+      yield put(
+        sendCommandFailed({
+          commandId: payload.commandId,
+          commandLineId: `${commandLineId}c`,
+        })
+      );
     }
   } catch (error) {
-    yield put(sendCommandFailed(payload));
+    yield put(
+      sendCommandFailed({
+        commandId: payload.commandId,
+        commandLineId: `${commandLineId}c`,
+      })
+    );
   }
 }
 
 function* watchOnSendCommand() {
   yield takeEvery(AttackProcessActionTypes.SEND_COMMAND_PENDING, onSendCommand);
+}
+
+// Send Command Faied
+function updateCommandFailed(
+  { commandId, commandLineId }: FailedCommandPayload,
+  attackState: AttackProcessState
+) {
+  try {
+    let attackProcessCommandsClone = clone(attackState.commands);
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isSending = false;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isFailed = true;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isSuccess = false;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isSending = false;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isFailed = true;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isSuccess = false;
+    return attackProcessCommandsClone;
+  } catch (error) {
+    return false;
+  }
+}
+
+function* onUpdateFailedCommand({ payload }: SendCommandFailedAction): any {
+  try {
+    const attackState = yield select(getAttackProcessState);
+    let resultSavePendingCommand = yield call(
+      updateCommandFailed,
+      payload,
+      attackState
+    );
+    if (resultSavePendingCommand) {
+      yield put(saveCommandSuccess(resultSavePendingCommand));
+    }
+  } catch (error) {}
+}
+
+function* watchOnFailedCommand() {
+  yield takeEvery(
+    AttackProcessActionTypes.SEND_COMMAND_FAILED,
+    onUpdateFailedCommand
+  );
+}
+
+// Send Command Success
+function updateCommandSuccess(
+  { commandId, commandLineId }: SuccessCommandPayload,
+  attackState: AttackProcessState
+) {
+  try {
+    let attackProcessCommandsClone = clone(attackState.commands);
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isSending = false;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isFailed = false;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isSuccess = true;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isSending = false;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isFailed = false;
+    attackProcessCommandsClone[commandId].commandHistory[
+      commandLineId
+    ].isSuccess = true;
+    return attackProcessCommandsClone;
+  } catch (error) {
+    return false;
+  }
+}
+
+function* onUpdateSuccessCommand({ payload }: SendCommandSuccessAction): any {
+  try {
+    const attackState = yield select(getAttackProcessState);
+    let resultSavePendingCommand = yield call(
+      updateCommandSuccess,
+      payload,
+      attackState
+    );
+    if (resultSavePendingCommand) {
+      yield put(saveCommandSuccess(resultSavePendingCommand));
+    }
+  } catch (error) {}
+}
+
+function* watchOnSuccessCommand() {
+  yield takeEvery(
+    AttackProcessActionTypes.SEND_COMMAND_SUCCESS,
+    onUpdateSuccessCommand
+  );
 }
 
 export default function* attackProcessesSaga() {
@@ -376,6 +521,6 @@ export default function* attackProcessesSaga() {
   yield all([fork(watchOnGotShell)]);
   yield all([fork(watchOnGotMeterpreter)]);
   yield all([fork(watchOnSendCommand)]);
-  // sendCommandSuccess
-  // sendCommandFailed
+  yield all([fork(watchOnSuccessCommand)]);
+  yield all([fork(watchOnFailedCommand)]);
 }

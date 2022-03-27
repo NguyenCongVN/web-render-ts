@@ -11,6 +11,8 @@ import {
   GotShellPayload,
   GotMeterpreterPayload,
   SendCommandPayload,
+  FailedCommandPayload,
+  SuccessCommandPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import { Command } from "../reducers/AttackProcessReducer";
 
@@ -142,7 +144,7 @@ export const closeCommand = () => {
   };
 };
 
-export const setSelectedCommand = (payload: Command) => {
+export const setSelectedCommand = (payload: string) => {
   return {
     type: AttackProcessActionTypes.SET_CURRENT_COMMAND,
     payload: payload,
@@ -156,14 +158,23 @@ export const sendCommand = (payload: SendCommandPayload) => {
   };
 };
 
-export const sendCommandSuccess = (payload: SendCommandPayload) => {
+export const saveCommandSuccess = (payload: {
+  [id: string]: Command[];
+}) => {
+  return {
+    type: AttackProcessActionTypes.SAVE_COMMAND_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const sendCommandSuccess = (payload: SuccessCommandPayload) => {
   return {
     type: AttackProcessActionTypes.SEND_COMMAND_SUCCESS,
     payload: payload,
   };
 };
 
-export const sendCommandFailed = (payload: SendCommandPayload) => {
+export const sendCommandFailed = (payload: FailedCommandPayload) => {
   return {
     type: AttackProcessActionTypes.SEND_COMMAND_FAILED,
     payload: payload,

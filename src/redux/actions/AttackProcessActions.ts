@@ -10,6 +10,8 @@ import {
   SendCommandPayload,
   StartAttackPendingPayload,
   TrainingSuccessPayload,
+  FailedCommandPayload,
+  SuccessCommandPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import { Command, CommandLine } from "../reducers/AttackProcessReducer";
 
@@ -104,7 +106,7 @@ export interface CloseCommandAction {
 
 export interface SetSelectedCommandAction {
   type: AttackProcessActionTypes.SET_CURRENT_COMMAND;
-  payload: Command;
+  payload: string;
 }
 
 export interface SendCommandPendingAction {
@@ -112,14 +114,19 @@ export interface SendCommandPendingAction {
   payload: SendCommandPayload;
 }
 
+export interface SaveCommandSuccessAction {
+  type: AttackProcessActionTypes.SAVE_COMMAND_SUCCESS;
+  payload: { [id: string]: Command };
+}
+
 export interface SendCommandSuccessAction {
   type: AttackProcessActionTypes.SEND_COMMAND_SUCCESS;
-  payload: SendCommandPayload;
+  payload: SuccessCommandPayload;
 }
 
 export interface SendCommandFailedAction {
   type: AttackProcessActionTypes.SEND_COMMAND_FAILED;
-  payload: SendCommandPayload;
+  payload: FailedCommandPayload;
 }
 
 export interface ReceivedResponseAction {
@@ -151,4 +158,5 @@ export type AttackProcessAction =
   | SendCommandSuccessAction
   | SendCommandPendingAction
   | SendCommandFailedAction
-  | ReceivedResponseAction;
+  | ReceivedResponseAction
+  | SaveCommandSuccessAction

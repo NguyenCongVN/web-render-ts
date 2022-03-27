@@ -4,11 +4,10 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers/RootReducer";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { Box } from "@mui/material";
-import "./ListDividerResult.css";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { attackProcessActionCreators } from "../../redux";
+import { CommandType } from "../../utils/enums/CommandType";
 interface ListDividerProps {
   shell?: boolean;
   meterpreter?: boolean;
@@ -21,7 +20,7 @@ export default function ListDividers({ shell, meterpreter }: ListDividerProps) {
 
   const dispatch = useDispatch();
 
-  const { openCommand } = bindActionCreators(
+  const { openCommand, setSelectedCommand } = bindActionCreators(
     attackProcessActionCreators,
     dispatch
   );
@@ -32,35 +31,16 @@ export default function ListDividers({ shell, meterpreter }: ListDividerProps) {
         return process.shellNumberGot.map((shellGot) => {
           return (
             <Box>
-              <ContextMenuTrigger id={`${process.hostLable}.shell${shellGot}`}>
-                <ListItem button divider>
-                  <ListItemText
-                    primary={`${process.hostLable} : ${shellGot}`}
-                  />
-                </ListItem>
-              </ContextMenuTrigger>
-              <ContextMenu
-                id={`${process.hostLable}.shell${shellGot}`}
-                className="context"
-                hideOnLeave
+              <ListItem
+                button
+                divider
+                onDoubleClick={() => {
+                  setSelectedCommand(shellGot);
+                  openCommand();
+                }}
               >
-                <MenuItem
-                  onClick={() => {
-                    openCommand();
-                  }}
-                  className="context-item"
-                >
-                  Mở shell
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    openCommand();
-                  }}
-                  className="context-item"
-                >
-                  Mở Command Manager
-                </MenuItem>
-              </ContextMenu>
+                <ListItemText primary={`${process.hostLable} : ${shellGot}`} />
+              </ListItem>
             </Box>
           );
         });
@@ -72,37 +52,18 @@ export default function ListDividers({ shell, meterpreter }: ListDividerProps) {
         return process.meterpreterGot.map((meterpreterGot) => {
           return (
             <Box>
-              <ContextMenuTrigger
-                id={`${process.hostLable}.meter${meterpreterGot}`}
+              <ListItem
+                button
+                divider
+                onDoubleClick={() => {
+                  setSelectedCommand(meterpreterGot);
+                  openCommand();
+                }}
               >
-                <ListItem button divider>
-                  <ListItemText
-                    primary={`${process.hostLable} : ${meterpreterGot}`}
-                  />
-                </ListItem>
-              </ContextMenuTrigger>
-              <ContextMenu
-                id={`${process.hostLable}.meter${meterpreterGot}`}
-                className="context"
-                hideOnLeave
-              >
-                <MenuItem
-                  onClick={() => {
-                    openCommand();
-                  }}
-                  className="context-item"
-                >
-                  Mở meterpreter
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    openCommand();
-                  }}
-                  className="context-item"
-                >
-                  Mở Command Manager
-                </MenuItem>
-              </ContextMenu>
+                <ListItemText
+                  primary={`${process.hostLable} : ${meterpreterGot}`}
+                />
+              </ListItem>
             </Box>
           );
         });

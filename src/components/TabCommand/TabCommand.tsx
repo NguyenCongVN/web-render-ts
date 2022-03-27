@@ -10,6 +10,9 @@ import { CommandType } from "../../utils/enums/CommandType";
 import { useEffect } from "react";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { attackProcessActionCreators } from "../../redux";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
+import SmsFailedIcon from "@mui/icons-material/SmsFailed";
+import PendingIcon from "@mui/icons-material/Pending";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -18,41 +21,52 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+  const attackProcessState = useSelector(
+    (rootState: RootState) => rootState.attackProcess
+  );
+
+  const { children, value, index, tabId, ...other } = props;
+  const divContent = React.useRef<HTMLDivElement>();
+
+  useEffect(() => {
+    if (divContent.current) {
+      divContent.current.scrollTop = divContent.current.scrollHeight;
+    }
+  }, [attackProcessState.commands]);
 
   return (
     <div
       role="tabpanel"
-      hidden={value !== index}
+      hidden={value !== tabId}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
       {...other}
       className="command-tab-panel"
-      style={{ display: value !== index ? "none" : "flex" }}
+      style={{ display: value !== tabId ? "none" : "flex" }}
     >
-      {value === index && (
+      <Box
+        sx={{
+          display: "flex",
+          padding: "10px",
+          flexDirection: "column",
+          maxHeight: "100%",
+          flex: 1,
+        }}
+      >
         <Box
+          ref={divContent}
           sx={{
             display: "flex",
-            padding: "10px",
             flexDirection: "column",
-            flex: 1,
-            maxHeight: "100%",
+            wordWrap: "break-word",
+            whiteSpace: "break-spaces",
+            wordBreak: "break-all",
+            overflowY: "auto",
           }}
         >
-          <Typography
-            sx={{
-              display: "block",
-              width: "100%",
-              wordWrap: "break-word",
-              whiteSpace: "break-spaces",
-              wordBreak: "break-all",
-            }}
-          >
-            {children}
-          </Typography>
+          {children}
         </Box>
-      )}
+      </Box>
     </div>
   );
 }
@@ -67,7 +81,9 @@ function a11yProps(index: number) {
 export default function BasicTabs() {
   let indexTab = -1;
 
-  const [value, setValue] = React.useState(0);
+  const attackProcessState = useSelector(
+    (rootState: RootState) => rootState.attackProcess
+  );
 
   const dispatch = useDispatch();
 
@@ -76,19 +92,14 @@ export default function BasicTabs() {
     dispatch
   );
 
-  const attackProcessState = useSelector(
-    (rootState: RootState) => rootState.attackProcess
-  );
-
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     indexTab = -1;
-  }, [attackProcessState.commands.length]);
+  }, [attackProcessState.commands]);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
     console.log(newValue);
-    setSelectedCommand(attackProcessState.commands[newValue]);
+    setSelectedCommand(Object.keys(attackProcessState.commands)[newValue]);
   };
 
   return (
@@ -102,23 +113,30 @@ export default function BasicTabs() {
     >
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs
-          value={value}
+          value={
+            attackProcessState.selectedCommand &&
+            Object.keys(attackProcessState.commands).length > 0
+              ? attackProcessState.selectedCommand
+              : attackProcessState.selectedCommand
+              ? Object.keys(attackProcessState.commands)[0]
+              : undefined
+          }
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          {attackProcessState.commands.map((command) => {
-            if (command.type === CommandType.Meterpreter) {
+          {Object.entries(attackProcessState.commands).map((command) => {
+            if (command[1].type === CommandType.Meterpreter) {
               return (
                 <Tab
-                  label={`Meterpreter ${command.id}`}
-                  {...a11yProps(Number(command.id))}
+                  label={`Meterpreter ${command[0]}`}
+                  {...a11yProps(Number(command[0]))}
                 />
               );
             } else {
               return (
                 <Tab
-                  label={`Shell ${command.id}`}
-                  {...a11yProps(Number(command.id))}
+                  label={`Shell ${command[0]}`}
+                  {...a11yProps(Number(command[0]))}
                 />
               );
             }
@@ -126,18 +144,99 @@ export default function BasicTabs() {
         </Tabs>
       </Box>
 
-      {attackProcessState.commands.map((command) => {
+      {Object.entries(attackProcessState.commands).map((command) => {
         indexTab++;
         return (
           <TabPanel
-            value={Number(value)}
+            value={Number(
+              attackProcessState.selectedCommand &&
+                Object.keys(attackProcessState.commands).length > 0
+                ? attackProcessState.selectedCommand
+                : attackProcessState.selectedCommand
+                ? Object.keys(attackProcessState.commands)[0]
+                : undefined
+            )}
             index={indexTab}
-            tabId={Number(command.id)}
+            tabId={Number(command[0])}
           >
-            <Typography variant="caption">
-              {">"}
-              {command.responseDialog}
-            </Typography>
+            {Object.entries(command[1].fullDialog).map((responseOrCommand) => {
+              if (responseOrCommand[1].type === "Command") {
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      backgroundColor: "white",
+                      padding: "5px",
+                      borderRadius: "10px",
+                      marginBottom: "2px",
+                      flex: 0,
+                      alignSelf: "flex-start",
+                    }}
+                  >
+                    <Typography variant="subtitle2" marginRight="2rem">
+                      {">"}
+                      {responseOrCommand[1].commandRequest}
+                      {"\n"}
+                    </Typography>
+                    {responseOrCommand[1].isSending &&
+                      !responseOrCommand[1].isSuccess &&
+                      !responseOrCommand[1].isFailed && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                          }}
+                        >
+                          <PendingIcon sx={{ transform: `scale(0.6)` }} accentHeight="10px" color="info" />{" "}
+                          <Typography variant="caption">đang gửi</Typography>
+                        </Box>
+                      )}
+                    {!responseOrCommand[1].isSending &&
+                      responseOrCommand[1].isSuccess &&
+                      !responseOrCommand[1].isFailed && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                          }}
+                        >
+                          <DoneAllIcon sx={{ transform: `scale(0.6)` }} color="success" />{" "}
+                          <Typography variant="caption">thành công</Typography>
+                        </Box>
+                      )}
+                    {!responseOrCommand[1].isSending &&
+                      !responseOrCommand[1].isSuccess &&
+                      responseOrCommand[1].isFailed && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                          }}
+                        >
+                          <SmsFailedIcon sx={{ transform: `scale(0.6)` }} color="error" />{" "}
+                          <Typography variant="caption">lỗi</Typography>
+                        </Box>
+                      )}
+                  </Box>
+                );
+              } else {
+                return (
+                  <Box sx={{ backgroundColor: "white" }}>
+                    <Typography variant="subtitle1">
+                      {">"}
+                      {responseOrCommand[1].response}
+                      {"\n"}
+                    </Typography>
+                  </Box>
+                );
+              }
+            })}
           </TabPanel>
         );
       })}

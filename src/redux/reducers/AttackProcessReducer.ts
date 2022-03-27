@@ -11,19 +11,26 @@ export enum IndividualAttackStatus {
   gotMeterpreter = "gotMeterpreter",
 }
 
+export interface ResponseDialog {
+  response: string;
+  timeResponse: Date;
+  type: "Response";
+}
+
 export interface CommandLine {
-  commandLineId: number;
   commandRequest: string;
   isSending: boolean;
   isSuccess: boolean;
   isFailed: boolean;
+  timeRequest: Date;
+  type: "Command";
 }
 
 export interface Command {
   type: CommandType;
-  id: string;
-  commandHistory: CommandLine[];
-  responseDialog: string[];
+  commandHistory: { [id: string]: CommandLine };
+  responseDialog: { [id: string]: ResponseDialog };
+  fullDialog: { [id: string]: CommandLine | ResponseDialog };
 }
 
 export interface ProgressAttack {
@@ -56,12 +63,20 @@ export interface AttackProcessState {
   detail: string;
   attackPath: string | undefined;
   openComand: boolean;
-  commands: Command[];
-  selectedCommand: Command | undefined;
+  commands: { [id: string]: Command };
+  selectedCommand: string | undefined;
 }
 
 const initialState: AttackProcessState = {
-  processes: [],
+  processes: [
+    {
+      hostLable: "victim",
+      meterpreterGot: ["1"],
+      progress: [],
+      scanReportId: "1",
+      shellNumberGot: [],
+    },
+  ],
   isAttackFinalTargetSuccess: undefined,
   isScanning: false,
   isAttacking: false,
@@ -77,7 +92,14 @@ const initialState: AttackProcessState = {
   detail: "",
   attackPath: undefined,
   openComand: false,
-  commands: [],
+  commands: {
+    "1": {
+      commandHistory: {},
+      fullDialog: {},
+      responseDialog: {},
+      type: CommandType.Meterpreter,
+    },
+  },
   selectedCommand: undefined,
 };
 
@@ -214,6 +236,11 @@ const attackProcessReducer = (
       return {
         ...state,
         selectedCommand: action.payload,
+      };
+    case AttackProcessActionTypes.SAVE_COMMAND_SUCCESS:
+      return {
+        ...state,
+        commands: action.payload,
       };
     default:
       return state;

@@ -6,9 +6,10 @@
     "configurations": [
         {
             "type": "pwa-chrome",
-            "request": "launch",
+            "request": "attach",
+            "port": 9222,
             "name": "Launch Chrome against localhost",
-            "url": "http://localhost:3001",
+            "url": "https://localhost:3001",
             "webRoot": "${workspaceFolder}"
         }
     ]

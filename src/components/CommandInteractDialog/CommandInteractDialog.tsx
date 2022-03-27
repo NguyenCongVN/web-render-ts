@@ -1,4 +1,5 @@
 import * as React from "react";
+import { KeyboardEvent } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -12,6 +13,8 @@ import { attackProcessActionCreators } from "../../redux";
 import { TextField } from "@mui/material";
 
 export default function MaxWidthDialog() {
+  const [command, setCommand] = React.useState("");
+
   const attackState = useSelector(
     (rootState: RootState) => rootState.attackProcess
   );
@@ -54,18 +57,24 @@ export default function MaxWidthDialog() {
             }}
             label=">command"
             variant="standard"
-            onChange={() => {
-              if (attackState.selectedCommand) {
+            value={command}
+            onChange={(e) => {
+              setCommand(e.target.value);
+            }}
+            onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
+              if (attackState.selectedCommand && e.code === "Enter") {
                 sendCommand({
-                  commandId: attackState.selectedCommand.id,
+                  commandId: attackState.selectedCommand,
                   commandLine: {
-                    commandLineId: 1,
-                    commandRequest: "123",
+                    commandRequest: command,
                     isSending: true,
                     isFailed: false,
                     isSuccess: false,
+                    timeRequest: new Date(),
+                    type: "Command",
                   },
                 });
+                setCommand("");
               }
             }}
           />

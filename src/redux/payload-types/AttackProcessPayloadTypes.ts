@@ -1,4 +1,7 @@
-import { CommandLine, IndividualAttackStatus } from "../reducers/AttackProcessReducer";
+import {
+  CommandLine,
+  IndividualAttackStatus,
+} from "../reducers/AttackProcessReducer";
 export interface StartAttackPendingPayload {
   scanConfigFile: string;
   topologyFile: string;
@@ -59,4 +62,14 @@ export interface ReceivedCommandPayload {
 export interface SendCommandPayload {
   commandId: string;
   commandLine: CommandLine;
+}
+
+export interface FailedCommandPayload {
+  commandId: string;
+  commandLineId: string;
+}
+
+export interface SuccessCommandPayload {
+  commandId: string;
+  commandLineId: string;
 }
