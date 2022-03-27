@@ -55,8 +55,8 @@ export interface GotMeterpreterPayload {
 }
 
 export interface ReceivedCommandPayload {
-  response: string;
-  commandLineId: string;
+  result: string;
+  commandId: string;
 }
 
 export interface SendCommandPayload {

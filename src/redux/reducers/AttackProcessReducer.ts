@@ -68,15 +68,7 @@ export interface AttackProcessState {
 }
 
 const initialState: AttackProcessState = {
-  processes: [
-    {
-      hostLable: "victim",
-      meterpreterGot: ["1"],
-      progress: [],
-      scanReportId: "1",
-      shellNumberGot: [],
-    },
-  ],
+  processes: [],
   isAttackFinalTargetSuccess: undefined,
   isScanning: false,
   isAttacking: false,
@@ -92,14 +84,7 @@ const initialState: AttackProcessState = {
   detail: "",
   attackPath: undefined,
   openComand: false,
-  commands: {
-    "1": {
-      commandHistory: {},
-      fullDialog: {},
-      responseDialog: {},
-      type: CommandType.Meterpreter,
-    },
-  },
+  commands: {},
   selectedCommand: undefined,
 };
 

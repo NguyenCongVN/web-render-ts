@@ -11,6 +11,7 @@ import {
   AddDetailProcessAction,
   GotMeterpreterAction,
   GotShellAction,
+  ReceivedResponseAction,
   ScanningFailedAction,
   ScanningSuccessAction,
   SendCommandFailedAction,
@@ -26,6 +27,7 @@ import {
   FailedCommandPayload,
   GotMeterpreterPayload,
   GotShellPayload,
+  ReceivedCommandPayload,
   ScanFailedPayload,
   ScanSuccessPayload,
   SendCommandPayload,
@@ -512,6 +514,48 @@ function* watchOnSuccessCommand() {
   );
 }
 
+// Received command result
+function receiveCommandResult(
+  { commandId, result }: ReceivedCommandPayload,
+  attackState: AttackProcessState
+) {
+  try {
+    let attackProcessCommandsClone = clone(attackState.commands);
+    let responseId = uuidv1();
+    attackProcessCommandsClone[commandId].responseDialog[`${responseId}r`] = {
+      response: result,
+      timeResponse: new Date(),
+      type: "Response",
+    };
+    attackProcessCommandsClone[commandId].fullDialog[`${responseId}r`] = {
+      response: result,
+      timeResponse: new Date(),
+      type: "Response",
+    };
+    return attackProcessCommandsClone;
+  } catch (error) {
+    return false;
+  }
+}
+
+function* onReceiveCommand({ payload }: ReceivedResponseAction): any {
+  try {
+    const attackState = yield select(getAttackProcessState);
+    let resultSavePendingCommand = yield call(
+      receiveCommandResult,
+      payload,
+      attackState
+    );
+    if (resultSavePendingCommand) {
+      yield put(saveCommandSuccess(resultSavePendingCommand));
+    }
+  } catch (error) {}
+}
+
+function* watchOnReceiveCommandResult() {
+  yield takeEvery(AttackProcessActionTypes.RECEIVED_RESPONSE, onReceiveCommand);
+}
+
 export default function* attackProcessesSaga() {
   yield all([fork(watchOnStartAttack)]);
   yield all([fork(watchOnAddData)]);
@@ -523,4 +567,5 @@ export default function* attackProcessesSaga() {
   yield all([fork(watchOnSendCommand)]);
   yield all([fork(watchOnSuccessCommand)]);
   yield all([fork(watchOnFailedCommand)]);
+  yield all([fork(watchOnReceiveCommandResult)]);
 }
