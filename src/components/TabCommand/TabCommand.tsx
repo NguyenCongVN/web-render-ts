@@ -191,7 +191,11 @@ export default function BasicTabs() {
                             alignItems: "center",
                           }}
                         >
-                          <PendingIcon sx={{ transform: `scale(0.6)` }} accentHeight="10px" color="info" />{" "}
+                          <PendingIcon
+                            sx={{ transform: `scale(0.6)` }}
+                            accentHeight="10px"
+                            color="info"
+                          />{" "}
                           <Typography variant="caption">đang gửi</Typography>
                         </Box>
                       )}
@@ -205,7 +209,10 @@ export default function BasicTabs() {
                             alignItems: "center",
                           }}
                         >
-                          <DoneAllIcon sx={{ transform: `scale(0.6)` }} color="success" />{" "}
+                          <DoneAllIcon
+                            sx={{ transform: `scale(0.6)` }}
+                            color="success"
+                          />{" "}
                           <Typography variant="caption">thành công</Typography>
                         </Box>
                       )}
@@ -219,7 +226,10 @@ export default function BasicTabs() {
                             alignItems: "center",
                           }}
                         >
-                          <SmsFailedIcon sx={{ transform: `scale(0.6)` }} color="error" />{" "}
+                          <SmsFailedIcon
+                            sx={{ transform: `scale(0.6)` }}
+                            color="error"
+                          />{" "}
                           <Typography variant="caption">lỗi</Typography>
                         </Box>
                       )}
@@ -227,7 +237,21 @@ export default function BasicTabs() {
                 );
               } else {
                 return (
-                  <Box sx={{ backgroundColor: "white" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      backgroundColor: "white",
+                      padding: "5px",
+                      borderRadius: "10px",
+                      marginBottom: "2px",
+                      flex: 0,
+                      alignSelf: "flex-end",
+                      marginRight: "2rem",
+                    }}
+                  >
                     <Typography variant="subtitle1">
                       {">"}
                       {responseOrCommand[1].response}

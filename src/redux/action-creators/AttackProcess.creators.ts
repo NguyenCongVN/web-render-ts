@@ -13,6 +13,7 @@ import {
   SendCommandPayload,
   FailedCommandPayload,
   SuccessCommandPayload,
+  ReceivedCommandPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import { Command } from "../reducers/AttackProcessReducer";
 
@@ -158,9 +159,7 @@ export const sendCommand = (payload: SendCommandPayload) => {
   };
 };
 
-export const saveCommandSuccess = (payload: {
-  [id: string]: Command[];
-}) => {
+export const saveCommandSuccess = (payload: { [id: string]: Command[] }) => {
   return {
     type: AttackProcessActionTypes.SAVE_COMMAND_SUCCESS,
     payload: payload,
@@ -181,7 +180,7 @@ export const sendCommandFailed = (payload: FailedCommandPayload) => {
   };
 };
 
-export const receivedResponse = (payload: ReceivedResponseAction) => {
+export const receivedResponse = (payload: ReceivedCommandPayload) => {
   return {
     type: AttackProcessActionTypes.RECEIVED_RESPONSE,
     payload: payload,

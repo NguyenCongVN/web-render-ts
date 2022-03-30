@@ -27,6 +27,7 @@ import {
   AttackStateChangePayload,
   GotMeterpreterPayload,
   GotShellPayload,
+  ReceivedCommandPayload,
   ScanSuccessPayload,
   TrainingSuccessPayload,
 } from "./redux/payload-types/AttackProcessPayloadTypes";
@@ -90,6 +91,7 @@ const App = () => {
     attackSuccess,
     gotShell,
     gotMeterpreter,
+    receivedResponse,
   } = bindActionCreators(attackProcessActionCreators, dispatch);
 
   useEffect(() => {
@@ -167,6 +169,14 @@ const App = () => {
       (payload: GotMeterpreterPayload) => {
         console.log("Got Meterpreter");
         gotMeterpreter(payload);
+      }
+    );
+
+    socket?.on(
+      SocketEvents.RECEIVED_RESPONSE,
+      (payload: ReceivedCommandPayload) => {
+        console.log("Received command response");
+        receivedResponse(payload);
       }
     );
   }, [fileContent]);
