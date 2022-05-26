@@ -37,6 +37,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SaveIcon from "@mui/icons-material/Save";
 import CommandInteractDialog from "./components/CommandInteractDialog/CommandInteractDialog";
 import { ConvertNVDData } from "./utils/file_utils/ConvertNVDData";
+import { Socket } from "dgram";
 // Socket io client
 const App = () => {
   const socket = useContext(SocketContext);
@@ -92,6 +93,7 @@ const App = () => {
     gotShell,
     gotMeterpreter,
     receivedResponse,
+    stopAttack,
   } = bindActionCreators(attackProcessActionCreators, dispatch);
 
   useEffect(() => {
@@ -179,6 +181,10 @@ const App = () => {
         receivedResponse(payload);
       }
     );
+
+    return () => {
+      socket?.removeAllListeners();
+    };
   }, [fileContent]);
 
   return (
@@ -193,13 +199,14 @@ const App = () => {
             alignItems: "center",
           }}
         >
+          {/* Open File GNS3 File Selector */}
           <FileSelector setFileContent={setFileContent} />
-          <FileSelector
+          {/* <FileSelector
             openNVDData
             setFileContent={(nvdFileContent: string) => {
               ConvertNVDData(nvdFileContent);
             }}
-          />
+          /> */}
           <Button
             sx={{ marginLeft: "5px" }}
             variant="contained"
@@ -215,7 +222,9 @@ const App = () => {
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <Button
               disabled={
-                attackProcessState.isAttacking || attackProcessState.isScanning
+                attackProcessState.isAttacking ||
+                attackProcessState.isScanning ||
+                attackProcessState.isTraining
               }
               sx={{ marginLeft: "5px" }}
               variant="contained"
@@ -290,10 +299,13 @@ const App = () => {
             <Button
               sx={{ marginLeft: "5px" }}
               variant="contained"
-              onClick={(e) => {}}
+              onClick={(e) => {
+                stopAttack();
+              }}
               disabled={
                 !attackProcessState.isScanning &&
-                !attackProcessState.isAttacking
+                !attackProcessState.isAttacking &&
+                !attackProcessState.isTraining
               }
             >
               <Typography variant="body2" marginRight="10px">

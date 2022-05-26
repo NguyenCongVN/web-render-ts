@@ -65,6 +65,7 @@ export interface AttackProcessState {
   openComand: boolean;
   commands: { [id: string]: Command };
   selectedCommand: string | undefined;
+  showAttackPathNetwork: boolean;
 }
 
 const initialState: AttackProcessState = {
@@ -86,6 +87,7 @@ const initialState: AttackProcessState = {
   openComand: false,
   commands: {},
   selectedCommand: undefined,
+  showAttackPathNetwork: false,
 };
 
 const attackProcessReducer = (
@@ -226,6 +228,23 @@ const attackProcessReducer = (
       return {
         ...state,
         commands: action.payload,
+      };
+    case AttackProcessActionTypes.TOOGLE_SHOW_ATTACKPATH:
+      return {
+        ...state,
+        showAttackPathNetwork: !state.showAttackPathNetwork,
+      };
+    case AttackProcessActionTypes.STOP_ATTACK_SUCCESS:
+      return {
+        ...state,
+        isStartingAttack: false,
+        isStartAttackFailed: false,
+        isStartingScanning: false,
+        isScanningFailed: false,
+        isTraining: false,
+        isTrainingFailed: false,
+        isScanning: false,
+        isAttacking: false,
       };
     default:
       return state;

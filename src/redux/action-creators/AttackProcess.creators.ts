@@ -186,3 +186,21 @@ export const receivedResponse = (payload: ReceivedCommandPayload) => {
     payload: payload,
   };
 };
+
+export const toogleShowAttackPath = () => {
+  return {
+    type: AttackProcessActionTypes.TOOGLE_SHOW_ATTACKPATH,
+  };
+};
+
+export const stopAttack = () => {
+  return {
+    type: AttackProcessActionTypes.STOP_ATTACK,
+  };
+};
+
+export const stopAttackSuccess = () => {
+  return {
+    type: AttackProcessActionTypes.STOP_ATTACK_SUCCESS,
+  };
+};

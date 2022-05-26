@@ -5,6 +5,8 @@ import {
   sendCommandSuccess,
   sendCommandFailed,
   saveCommandSuccess,
+  stopAttack,
+  stopAttackSuccess,
 } from "../action-creators/AttackProcess.creators";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
@@ -18,6 +20,7 @@ import {
   SendCommandPendingAction,
   SendCommandSuccessAction,
   StartAttackPendingAction,
+  StopAttackAction,
 } from "../actions/AttackProcessActions";
 import { RootState } from "../reducers/RootReducer";
 import { socket } from "../../context/socket";
@@ -556,6 +559,40 @@ function* watchOnReceiveCommandResult() {
   yield takeEvery(AttackProcessActionTypes.RECEIVED_RESPONSE, onReceiveCommand);
 }
 
+// Stop Attack
+function emitStopAttack() {
+  if (socket !== undefined) {
+    return new Promise((resolve) => {
+      //@ts-ignore
+      socket.emit(
+        SocketEvents.STOP_ATTACK,
+        (responseStatus: string) => {
+          resolve(responseStatus);
+        }
+      );
+    });
+  }
+}
+
+// Stop attack
+function* onStopProcess(): any {
+  try {
+    const responseStatus = yield call(emitStopAttack);
+    if (responseStatus === "OK") {
+      yield put(stopAttackSuccess());
+    }
+  } catch (error) {
+  }
+}
+
+// Bắt update host pending event
+function* watchOnStopAttack() {
+  yield takeEvery(
+    AttackProcessActionTypes.STOP_ATTACK,
+    onStopProcess
+  );
+}
+
 export default function* attackProcessesSaga() {
   yield all([fork(watchOnStartAttack)]);
   yield all([fork(watchOnAddData)]);
@@ -568,4 +605,5 @@ export default function* attackProcessesSaga() {
   yield all([fork(watchOnSuccessCommand)]);
   yield all([fork(watchOnFailedCommand)]);
   yield all([fork(watchOnReceiveCommandResult)]);
+  yield all([fork(watchOnStopAttack)]);
 }

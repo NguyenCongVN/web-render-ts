@@ -1,6 +1,7 @@
 export enum SocketEvents {
   // Emit from client event
   START_ATTACK = "START_ATTACK",
+  STOP_ATTACK = "STOP_ATTACK",
 
   // Emit from server event
   PREPARE_DATA = "PREPARE_DATA",

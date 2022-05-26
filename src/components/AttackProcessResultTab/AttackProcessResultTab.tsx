@@ -4,9 +4,11 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import VerticalTabs from "../VerticalTab/VerticalTab";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers/RootReducer";
 import { Button } from "@mui/material";
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { attackProcessActionCreators } from "../../redux";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -44,6 +46,13 @@ function a11yProps(index: number) {
 
 export default function AttackProcessResultTab() {
   const [value, setValue] = React.useState(0);
+
+  const dispath = useDispatch();
+
+  const { toogleShowAttackPath } = bindActionCreators(
+    attackProcessActionCreators,
+    dispath
+  );
 
   const attackProcessState = useSelector(
     (rootState: RootState) => rootState.attackProcess
@@ -86,6 +95,15 @@ export default function AttackProcessResultTab() {
         </TabPanel>
         <TabPanel value={value} index={1}>
           Logical Attack Path : {attackProcessState.attackPath}
+          {attackProcessState.attackPath ? (
+            <Button
+              onClick={() => {
+                toogleShowAttackPath();
+              }}
+            >
+              Xem chi tiết
+            </Button>
+          ) : null}
         </TabPanel>
         <TabPanel value={value} index={2}>
           <VerticalTabs />

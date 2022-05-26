@@ -23,6 +23,14 @@ export interface StartAttackPendingAction {
   payload: StartAttackPendingPayload;
 }
 
+export interface StopAttackAction {
+  type: AttackProcessActionTypes.STOP_ATTACK;
+}
+
+export interface StopAttackSucessAction {
+  type: AttackProcessActionTypes.STOP_ATTACK_SUCCESS;
+}
+
 export interface StartAttackSuccessAction {
   type: AttackProcessActionTypes.START_ATTACK_SUCCESS;
 }
@@ -134,6 +142,10 @@ export interface ReceivedResponseAction {
   payload: ReceivedCommandPayload;
 }
 
+export interface ToogleShowAttackPathAction {
+  type: AttackProcessActionTypes.TOOGLE_SHOW_ATTACKPATH;
+}
+
 export type AttackProcessAction =
   | StartAttackPendingAction
   | StartAttackSuccessAction
@@ -160,3 +172,6 @@ export type AttackProcessAction =
   | SendCommandFailedAction
   | ReceivedResponseAction
   | SaveCommandSuccessAction
+  | ToogleShowAttackPathAction
+  | StopAttackAction
+  | StopAttackSucessAction;

@@ -17,6 +17,7 @@ import {
 import { setLinks } from "../../redux/action-creators/Link.creators";
 import clone from "clone";
 import AttackProcess from "../AttackProcess/AttackProcess";
+import AttackPathNetwork from "../AttackPath/AttackPath";
 interface NetworkProps {
   topologyInput: Topology | undefined;
 }
@@ -184,7 +185,7 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
       });
     }
     reload();
-  }, [domNode, network, options, hostsState.draftHosts]);
+  }, [hostsState.draftHosts]);
 
   return (
     <Box sx={{ width: "100vw" }}>
@@ -249,6 +250,7 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
           hostsState.isUpdateFailed
         }
       />
+      <AttackPathNetwork />
     </Box>
   );
 };
