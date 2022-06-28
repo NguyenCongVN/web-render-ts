@@ -7,9 +7,11 @@ import {
   saveCommandSuccess,
   stopAttack,
   stopAttackSuccess,
+  toogleAddAttackOptions,
 } from "../action-creators/AttackProcess.creators";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
+  AddAttackOptionsAction,
   AddDetailProcessAction,
   GotMeterpreterAction,
   GotShellAction,
@@ -21,11 +23,14 @@ import {
   SendCommandSuccessAction,
   StartAttackPendingAction,
   StopAttackAction,
+  ToogleAddAttackOptionsAction,
+  UpdateAttackOptionsPendingAction,
 } from "../actions/AttackProcessActions";
 import { RootState } from "../reducers/RootReducer";
 import { socket } from "../../context/socket";
 import { SocketEvents } from "../../utils/enums/SocketEvents";
 import {
+  ReceivedAddAttackOptionsPayload,
   AddDetailPayload,
   FailedCommandPayload,
   GotMeterpreterPayload,
@@ -564,12 +569,9 @@ function emitStopAttack() {
   if (socket !== undefined) {
     return new Promise((resolve) => {
       //@ts-ignore
-      socket.emit(
-        SocketEvents.STOP_ATTACK,
-        (responseStatus: string) => {
-          resolve(responseStatus);
-        }
-      );
+      socket.emit(SocketEvents.STOP_ATTACK, (responseStatus: string) => {
+        resolve(responseStatus);
+      });
     });
   }
 }
@@ -581,15 +583,96 @@ function* onStopProcess(): any {
     if (responseStatus === "OK") {
       yield put(stopAttackSuccess());
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 // Bắt update host pending event
 function* watchOnStopAttack() {
+  yield takeEvery(AttackProcessActionTypes.STOP_ATTACK, onStopProcess);
+}
+
+// add attack options when receiving prompt from server.
+function* onAddAttackOptions({ payload }: AddAttackOptionsAction): any {
+  try {
+    // add default data. ""
+
+    // check payload hostlabel is not empty
+    if (payload.hostLabel) {
+      // find host with label
+      let hostState: Host[] = yield select(getHostStates);
+      let hostClone = clone(hostState);
+
+      for (let i = 0; i < hostClone.length; i++) {
+        if (hostClone[i].label.text === payload.hostLabel) {
+          hostClone[i].AttackOptions.value.push({
+            name: payload.name,
+            value: "",
+          });
+          hostState = hostClone; // Update and re-render value.
+
+          // toogle add attack options form.
+          put(toogleAddAttackOptions({ isInital: true }));
+
+          break;
+        }
+      }
+    }
+  } catch (err) {}
+}
+
+// take all add attack options from server.
+function* watchOnAddAttackOption() {
   yield takeEvery(
-    AttackProcessActionTypes.STOP_ATTACK,
-    onStopProcess
+    AttackProcessActionTypes.ADD_ATTACK_OPTIONS_PENDING,
+    onAddAttackOptions
+  );
+}
+
+//
+function* onUpdateAttackOptions({ payload }: UpdateAttackOptionsPendingAction) {
+  try {
+    // update
+    // check payload hostlabel is not empty
+    if (payload.updateAttackPayload.hostLabel) {
+      // find host with label
+      let hostState: Host[] = yield select(getHostStates);
+      let hostClone = clone(hostState);
+
+      for (let i = 0; i < hostClone.length; i++) {
+        if (hostClone[i].label.text === payload.updateAttackPayload.hostLabel) {
+          hostClone[i].AttackOptions.value.push({
+            name: payload.updateAttackPayload.name,
+            value: "",
+          });
+          hostState = hostClone; // Update and re-render value.
+          break;
+        }
+      }
+    }
+    // check if is inital
+    if (payload.isInitial) {
+      // socket emit the update and continue attacking
+      socket.emit(
+        SocketEvents.ADD_ATTACK_OPTION_AND_CONTINUE,
+        payload.updateAttackPayload
+      );
+      console.log("emit add attack option and continue");
+    } else {
+      // socket emit the update not have to remusing attacking.
+      socket.emit(
+        SocketEvents.UPDATE_ATTACK_OPTION,
+        payload.updateAttackPayload
+      );
+      console.log("emit add attack option");
+    }
+  } catch (err) {}
+}
+
+// take all update attack options pending
+function* watchOnUpdateAttackOptionsPending() {
+  yield takeEvery(
+    AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_PENDING,
+    onUpdateAttackOptions
   );
 }
 
@@ -606,4 +689,6 @@ export default function* attackProcessesSaga() {
   yield all([fork(watchOnFailedCommand)]);
   yield all([fork(watchOnReceiveCommandResult)]);
   yield all([fork(watchOnStopAttack)]);
+  yield all([fork(watchOnAddAttackOption)]);
+  yield all([fork(watchOnUpdateAttackOptionsPending)]);
 }

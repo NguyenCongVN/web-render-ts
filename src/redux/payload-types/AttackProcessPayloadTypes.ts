@@ -73,3 +73,22 @@ export interface SuccessCommandPayload {
   commandId: string;
   commandLineId: string;
 }
+
+export interface ReceivedAddAttackOptionsPayload {
+  hostLabel: string;
+  name: string;
+}
+
+export interface UpdateAttackOptionsPayload {
+  hostLabel: string;
+  name: string;
+  value: string;
+}
+
+// payload update attack option after done
+export interface UpdateAttackOptionsPayload {
+  hostLabel: string;
+  name: string;
+  value: string;
+  isInitial: boolean; // check if prompted or update manulally.
+}

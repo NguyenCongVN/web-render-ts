@@ -157,6 +157,8 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
             isCollapse
           />
         ) : null}
+
+        
       </Collapse>
     </List>
   );

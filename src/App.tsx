@@ -23,6 +23,7 @@ import { TypeAttack } from "./utils/enums/TypeAttacks";
 import { SocketContext } from "./context/socket";
 import { SocketEvents } from "./utils/enums/SocketEvents";
 import {
+  UpdateAttackOptionsPayload,
   AddDetailPayload,
   AttackStateChangePayload,
   GotMeterpreterPayload,
@@ -30,6 +31,7 @@ import {
   ReceivedCommandPayload,
   ScanSuccessPayload,
   TrainingSuccessPayload,
+  ReceivedAddAttackOptionsPayload,
 } from "./redux/payload-types/AttackProcessPayloadTypes";
 import AlertModal from "./components/AlertModal/AlertModal";
 import StopCircleIcon from "@mui/icons-material/StopCircle";
@@ -38,6 +40,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CommandInteractDialog from "./components/CommandInteractDialog/CommandInteractDialog";
 import { ConvertNVDData } from "./utils/file_utils/ConvertNVDData";
 import { Socket } from "dgram";
+import { addAttackOptionsPending } from "./redux/action-creators/AttackProcess.creators";
 // Socket io client
 const App = () => {
   const socket = useContext(SocketContext);
@@ -179,6 +182,15 @@ const App = () => {
       (payload: ReceivedCommandPayload) => {
         console.log("Received command response");
         receivedResponse(payload);
+      }
+    );
+
+    // received add attack options command.
+    socket?.on(
+      SocketEvents.ADD_ATTACK_OPTION,
+      (payload: ReceivedAddAttackOptionsPayload) => {
+        console.log("Received add attack options");
+        addAttackOptionsPending(payload);
       }
     );
 

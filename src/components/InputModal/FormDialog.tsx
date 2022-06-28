@@ -15,7 +15,7 @@ import { Box, FormControlLabel } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { bindActionCreators } from "@reduxjs/toolkit";
 import { hostActionCreators } from "../../redux";
-import { Host } from "../../utils/classes/Host";
+import { AttackOption, AttackOptions, Host } from "../../utils/classes/Host";
 import clone from "clone";
 import { NfsMounted } from "../../utils/classes/NsfMounted";
 import { NsfExport } from "../../utils/classes/NsfExport";
@@ -28,7 +28,7 @@ interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   property: NodeProperties;
-  data?: Service | Vulnerbility | NfsMounted | NsfExport;
+  data?: Service | Vulnerbility | NfsMounted | NsfExport | AttackOptions;
   host: Host;
 }
 
@@ -54,7 +54,12 @@ export default function FormDialog({
   };
 
   const [dataUpdate, setDataUpdate] = useState<
-    Service | Vulnerbility | NfsMounted | NsfExport | BlackListDirection
+    | Service
+    | Vulnerbility
+    | NfsMounted
+    | NsfExport
+    | BlackListDirection
+    | AttackOptions
   >();
 
   // Set giá trị khởi tạo đối với từng property
@@ -98,6 +103,14 @@ export default function FormDialog({
 
     if (property === NodeProperties.BlackListDirection) {
       setDataUpdate(new BlackListDirection());
+    }
+
+    if (property === NodeProperties.AttackOptions) {
+      if (data) {
+        setDataUpdate(data);
+      } else {
+        setDataUpdate(new AttackOptions());
+      }
     }
   }, [data, property]);
 
@@ -457,6 +470,44 @@ export default function FormDialog({
             />
           </>
         );
+      case NodeProperties.AttackOptions:
+        return dataUpdate && dataUpdate.type === "AttackOptions"
+          ? dataUpdate.value.map((attackOption: AttackOption) => {
+              return (
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  id={attackOption.name}
+                  label={attackOption.name}
+                  type="text"
+                  fullWidth
+                  variant="standard"
+                  onChange={(e) => {
+                    setDataUpdate(() => {
+                      if (property === NodeProperties.AttackOptions) {
+                        if (dataUpdate) {
+                          let attackOptionFound = dataUpdate.value.find(
+                            (attackOptionFound) =>
+                              attackOptionFound.name === attackOption.name
+                          );
+
+                          if (attackOptionFound) {
+                            attackOptionFound.value = e.target.value;
+                            dataUpdate.value = [
+                              ...dataUpdate.value,
+                              attackOptionFound,
+                            ];
+                          }
+                          return dataUpdate;
+                        }
+                      }
+                    });
+                  }}
+                  required
+                />
+              );
+            })
+          : null;
       default:
         break;
     }
@@ -512,6 +563,22 @@ export default function FormDialog({
                 }
 
                 if (property === NodeProperties.BlackListDirection) {
+                  if (dataUpdate) {
+                    if (
+                      (dataUpdate as BlackListDirection).from !== "" &&
+                      (dataUpdate as BlackListDirection).to !== ""
+                    ) {
+                      addBlackDirectionPending({
+                        host: host,
+                        blackDirection: dataUpdate as BlackListDirection,
+                      });
+                    }
+                  }
+                }
+
+                // Attack Options
+
+                if (property === NodeProperties.AttackOptions) {
                   if (dataUpdate) {
                     if (
                       (dataUpdate as BlackListDirection).from !== "" &&

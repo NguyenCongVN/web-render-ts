@@ -1,3 +1,4 @@
+import { AttackOptions } from "../classes/Host";
 import { INfsExport } from "./INfsExport";
 import { INfsMounted } from "./INfsMounted";
 import { IService } from "./IService";
@@ -13,4 +14,5 @@ export interface IHost extends Node2 {
   Services: IService[];
   IsSwitch: boolean;
   IsRouter: boolean;
+  AttackOptions: AttackOptions;
 }

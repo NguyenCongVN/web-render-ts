@@ -9,7 +9,22 @@ export class BlackListDirection {
   id: string = "";
   from: string = "";
   to: string = "";
+  type: "BlackListDirection" = "BlackListDirection";
 }
+
+export class AttackOption {
+  name: string = "";
+  value: string = "";
+}
+
+export class AttackOptions {
+  constructor() {
+    this.value = [];
+  }
+  type: "AttackOptions" = "AttackOptions";
+  value: AttackOption[] = [];
+}
+
 class Host implements IHost {
   constructor(json: any) {
     let hostJsonObject = json as IHost;
@@ -31,6 +46,7 @@ class Host implements IHost {
     if (this.symbol.indexOf("switch") > 0) {
       this.IsSwitch = true;
     }
+    this.AttackOptions = new AttackOptions();
   }
   isAttacker = false;
   isTarget = false;
@@ -54,6 +70,9 @@ class Host implements IHost {
   node_id: string = "";
   height: number = 100;
   width: number = 100;
+
+  // attack options
+  AttackOptions: AttackOptions = new AttackOptions();
 }
 
 export { Host };

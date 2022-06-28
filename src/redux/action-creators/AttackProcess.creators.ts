@@ -1,5 +1,8 @@
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
-import { ReceivedResponseAction } from "../actions/AttackProcessActions";
+import {
+  AddAttackOptionsAction,
+  ReceivedResponseAction,
+} from "../actions/AttackProcessActions";
 import {
   AddDetailPayload,
   ScanFailedPayload,
@@ -14,6 +17,9 @@ import {
   FailedCommandPayload,
   SuccessCommandPayload,
   ReceivedCommandPayload,
+  AttackFaiedPayload,
+  ReceivedAddAttackOptionsPayload,
+  UpdateAttackOptionsPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import { Command } from "../reducers/AttackProcessReducer";
 
@@ -202,5 +208,46 @@ export const stopAttack = () => {
 export const stopAttackSuccess = () => {
   return {
     type: AttackProcessActionTypes.STOP_ATTACK_SUCCESS,
+  };
+};
+
+export const addAttackOptionsPending = (
+  payload: ReceivedAddAttackOptionsPayload
+) => {
+  return {
+    type: AttackProcessActionTypes.ADD_ATTACK_OPTIONS_PENDING,
+    payload: payload,
+  };
+};
+
+export const toogleAddAttackOptions = (payload: { isInital: boolean }) => {
+  return {
+    type: AttackProcessActionTypes.TOOGLE_ADD_ATTACK_OPTIONS,
+    payload: payload,
+  };
+};
+
+export const updateAttackOptionsPending = (
+  payload: UpdateAttackOptionsPayload
+) => {
+  return {
+    type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_PENDING,
+    payload: payload,
+  };
+};
+
+export const updateAttackOptionsSuccess = (payload: {
+  addAttackPayload: ReceivedAddAttackOptionsPayload;
+  isInitial: boolean; // want update and continue in server.
+}) => {
+  return {
+    type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_SUCCESS,
+    payload: payload,
+  };
+};
+
+export const updateAttackOptionsFailed = () => {
+  return {
+    type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_FAILED,
   };
 };

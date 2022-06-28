@@ -59,7 +59,9 @@ export interface AttackProcessState {
   isTrainingFailed: boolean;
   currentHostLabel: string | undefined; // HostLabel
   currentStateAttack: number | undefined; // State Number
-  askScanOpen: boolean;
+  askScanOpen: boolean; // ask if scan
+  askAddAttackOptions: boolean;
+  isInitalAddAttackOptions: boolean;
   detail: string;
   attackPath: string | undefined;
   openComand: boolean;
@@ -82,6 +84,8 @@ const initialState: AttackProcessState = {
   isTrainingFailed: false,
   currentStateAttack: undefined,
   askScanOpen: false,
+  askAddAttackOptions: false,
+  isInitalAddAttackOptions: false,
   detail: "",
   attackPath: undefined,
   openComand: false,
@@ -100,6 +104,14 @@ const attackProcessReducer = (
         ...state,
         askScanOpen: !state.askScanOpen,
       };
+    case AttackProcessActionTypes.TOOGLE_ADD_ATTACK_OPTIONS:
+      return {
+        ...state,
+        askAddAttackOptions: !state.askAddAttackOptions,
+        isInitalAddAttackOptions: action.payload.isInital,
+      };
+    case AttackProcessActionTypes.ADD_ATTACK_OPTIONS_PENDING: // update in saga.
+      return state;
     case AttackProcessActionTypes.START_ATTACK_PENDING:
       return {
         ...state,

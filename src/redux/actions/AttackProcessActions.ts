@@ -12,6 +12,8 @@ import {
   TrainingSuccessPayload,
   FailedCommandPayload,
   SuccessCommandPayload,
+  ReceivedAddAttackOptionsPayload,
+  UpdateAttackOptionsPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import { Command, CommandLine } from "../reducers/AttackProcessReducer";
 
@@ -146,6 +148,41 @@ export interface ToogleShowAttackPathAction {
   type: AttackProcessActionTypes.TOOGLE_SHOW_ATTACKPATH;
 }
 
+// Just toogle to add attack options
+export interface ToogleAddAttackOptionsAction {
+  type: AttackProcessActionTypes.TOOGLE_ADD_ATTACK_OPTIONS;
+  payload: { isInital: boolean };
+}
+
+// Add attack options when received from server.
+export interface AddAttackOptionsAction {
+  type: AttackProcessActionTypes.ADD_ATTACK_OPTIONS_PENDING;
+  payload: ReceivedAddAttackOptionsPayload;
+}
+
+// update attack options
+export interface UpdateAttackOptionsPendingAction {
+  type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_PENDING;
+  payload: {
+    updateAttackPayload: UpdateAttackOptionsPayload;
+    isInitial: boolean; // want update and continue in server.
+  };
+}
+
+// After update success.
+export interface UpdateAttackOptionsSuccessAction {
+  type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_SUCCESS;
+  payload: {
+    updateAttackPayload: UpdateAttackOptionsPayload;
+    isInitial: boolean; // want update and continue in server.
+  };
+}
+
+// After update failed.
+export interface UpdateAttackOptionsFailedAction {
+  type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_FAILED;
+}
+
 export type AttackProcessAction =
   | StartAttackPendingAction
   | StartAttackSuccessAction
@@ -174,4 +211,9 @@ export type AttackProcessAction =
   | SaveCommandSuccessAction
   | ToogleShowAttackPathAction
   | StopAttackAction
-  | StopAttackSucessAction;
+  | StopAttackSucessAction
+  | ToogleAddAttackOptionsAction
+  | AddAttackOptionsAction
+  | UpdateAttackOptionsPendingAction
+  | UpdateAttackOptionsFailedAction
+  | UpdateAttackOptionsSuccessAction;

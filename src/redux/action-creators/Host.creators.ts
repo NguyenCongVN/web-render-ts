@@ -273,6 +273,27 @@ export const removeBlackDirectionFailed = () => {
   };
 };
 
+
+// Add Attack Options
+
+export const addAttackOptionsPending = (payload: AddBlackDirectionPayload) => {
+  return {
+    type: HostActionTypes.ADD_BLACK_DIRECTION_PENDING,
+    payload: payload,
+  };
+};
+export const addAttackOptionsSuccess = () => {
+  return {
+    type: HostActionTypes.ADD_BLACK_DIRECTION_SUCCESS,
+  };
+};
+
+export const addAttackOptionsFailed = () => {
+  return {
+    type: HostActionTypes.ADD_BLACK_DIRECTION_FAILED,
+  };
+};
+
 export const saveDraftHosts = () => {
   return {
     type: HostActionTypes.SAVE_DRAFTHOST,
