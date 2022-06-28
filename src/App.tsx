@@ -40,7 +40,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CommandInteractDialog from "./components/CommandInteractDialog/CommandInteractDialog";
 import { ConvertNVDData } from "./utils/file_utils/ConvertNVDData";
 import { Socket } from "dgram";
-import { addAttackOptionsPending } from "./redux/action-creators/AttackProcess.creators";
+import AttackOptionsModal from "./components/AttackOptionsModal/AttackOptionsModal";
 // Socket io client
 const App = () => {
   const socket = useContext(SocketContext);
@@ -97,6 +97,7 @@ const App = () => {
     gotMeterpreter,
     receivedResponse,
     stopAttack,
+    addAttackOptionsPending,
   } = bindActionCreators(attackProcessActionCreators, dispatch);
 
   useEffect(() => {
@@ -190,6 +191,7 @@ const App = () => {
       SocketEvents.ADD_ATTACK_OPTION,
       (payload: ReceivedAddAttackOptionsPayload) => {
         console.log("Received add attack options");
+        console.log(payload);
         addAttackOptionsPending(payload);
       }
     );
@@ -360,6 +362,9 @@ const App = () => {
           topoContent={topologyFile}
           reachableMap={reachableMap}
         ></AlertModal>
+        <AttackOptionsModal
+          hostInput={attackProcessState.selectedHostToAddAttackOptions}
+        />
       </Stack>
       <CommandInteractDialog />
     </Box>

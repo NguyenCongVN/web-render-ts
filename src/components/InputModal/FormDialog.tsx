@@ -109,7 +109,7 @@ export default function FormDialog({
       if (data) {
         setDataUpdate(data);
       } else {
-        setDataUpdate(new AttackOptions());
+        setDataUpdate(host.AttackOptions);
       }
     }
   }, [data, property]);
@@ -471,8 +471,11 @@ export default function FormDialog({
           </>
         );
       case NodeProperties.AttackOptions:
+        console.log("rendering attack options");
+        console.log(dataUpdate);
         return dataUpdate && dataUpdate.type === "AttackOptions"
           ? dataUpdate.value.map((attackOption: AttackOption) => {
+              console.log("rendering text");
               return (
                 <TextField
                   autoFocus
@@ -580,22 +583,13 @@ export default function FormDialog({
 
                 if (property === NodeProperties.AttackOptions) {
                   if (dataUpdate) {
-                    if (
-                      (dataUpdate as BlackListDirection).from !== "" &&
-                      (dataUpdate as BlackListDirection).to !== ""
-                    ) {
-                      addBlackDirectionPending({
-                        host: host,
-                        blackDirection: dataUpdate as BlackListDirection,
-                      });
-                    }
                   }
                 }
               }
               handleClose();
             }}
           >
-            Thêm
+            {dataUpdate?.type === "AttackOptions" ? "Chấp nhận" : "Thêm"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -595,24 +595,38 @@ function* watchOnStopAttack() {
 function* onAddAttackOptions({ payload }: AddAttackOptionsAction): any {
   try {
     // add default data. ""
+    console.log("asdsa");
 
     // check payload hostlabel is not empty
     if (payload.hostLabel) {
       // find host with label
       let hostState: Host[] = yield select(getHostStates);
+      let attackProcessState: AttackProcessState = yield select(
+        getAttackProcessState
+      );
       let hostClone = clone(hostState);
 
       for (let i = 0; i < hostClone.length; i++) {
         if (hostClone[i].label.text === payload.hostLabel) {
-          hostClone[i].AttackOptions.value.push({
-            name: payload.name,
-            value: "",
-          });
-          hostState = hostClone; // Update and re-render value.
+          // set selected host to add attack options
+          attackProcessState.selectedHostToAddAttackOptions = hostClone[i];
 
+          // check if there is existing options
+          let optionCheck = hostClone[i].AttackOptions.value.find(
+            (attackOption) => {
+              return attackOption.name === payload.name;
+            }
+          );
+
+          if (!optionCheck) {
+            hostClone[i].AttackOptions.value.push({
+              name: payload.name,
+              value: "",
+            });
+            hostState = hostClone; // Update and re-render value.
+          }
           // toogle add attack options form.
-          put(toogleAddAttackOptions({ isInital: true }));
-
+          yield put(toogleAddAttackOptions({ isInital: true }));
           break;
         }
       }

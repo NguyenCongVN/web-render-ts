@@ -162,6 +162,7 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
 
   // Form to add and edit
   const renderForm = () => {
+    console.log("rendering form");
     return (
       <FormDialog
         open={formOpen}

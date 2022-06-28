@@ -1,3 +1,4 @@
+import { Host } from "../../utils/classes/Host";
 import { CommandType } from "../../utils/enums/CommandType";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import { AttackProcessAction } from "../actions/AttackProcessActions";
@@ -62,6 +63,7 @@ export interface AttackProcessState {
   askScanOpen: boolean; // ask if scan
   askAddAttackOptions: boolean;
   isInitalAddAttackOptions: boolean;
+  selectedHostToAddAttackOptions: Host | undefined;
   detail: string;
   attackPath: string | undefined;
   openComand: boolean;
@@ -85,6 +87,7 @@ const initialState: AttackProcessState = {
   currentStateAttack: undefined,
   askScanOpen: false,
   askAddAttackOptions: false,
+  selectedHostToAddAttackOptions: undefined,
   isInitalAddAttackOptions: false,
   detail: "",
   attackPath: undefined,
