@@ -1,7 +1,9 @@
+import { Host } from "../../utils/classes/Host";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
   AddAttackOptionsAction,
   ReceivedResponseAction,
+  UpdateAttackOptionsPendingAction,
 } from "../actions/AttackProcessActions";
 import {
   AddDetailPayload,
@@ -20,6 +22,7 @@ import {
   AttackFaiedPayload,
   ReceivedAddAttackOptionsPayload,
   UpdateAttackOptionsPayload,
+  UpdateAttackOptionsInitPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import { Command } from "../reducers/AttackProcessReducer";
 
@@ -228,7 +231,7 @@ export const toogleAddAttackOptions = (payload: { isInital: boolean }) => {
 };
 
 export const updateAttackOptionsPending = (
-  payload: UpdateAttackOptionsPayload
+  payload: UpdateAttackOptionsInitPayload
 ) => {
   return {
     type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_PENDING,
@@ -249,5 +252,14 @@ export const updateAttackOptionsSuccess = (payload: {
 export const updateAttackOptionsFailed = () => {
   return {
     type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_FAILED,
+  };
+};
+
+export const setSelectedHostAttackOptions = (
+  selectedHost: Host | undefined
+) => {
+  return {
+    type: AttackProcessActionTypes.SET_SELECTED_HOST_OPEN_OPTIONS,
+    payload: selectedHost,
   };
 };

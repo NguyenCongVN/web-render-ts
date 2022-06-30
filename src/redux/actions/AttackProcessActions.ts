@@ -1,3 +1,4 @@
+import { Host } from "../../utils/classes/Host";
 import { AttackProcessActionTypes } from "../action-types/AttackProcess.types";
 import {
   AddDetailPayload,
@@ -14,6 +15,7 @@ import {
   SuccessCommandPayload,
   ReceivedAddAttackOptionsPayload,
   UpdateAttackOptionsPayload,
+  UpdateAttackOptionsInitPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import { Command, CommandLine } from "../reducers/AttackProcessReducer";
 
@@ -163,24 +165,23 @@ export interface AddAttackOptionsAction {
 // update attack options
 export interface UpdateAttackOptionsPendingAction {
   type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_PENDING;
-  payload: {
-    updateAttackPayload: UpdateAttackOptionsPayload;
-    isInitial: boolean; // want update and continue in server.
-  };
+  payload: UpdateAttackOptionsInitPayload;
 }
 
 // After update success.
 export interface UpdateAttackOptionsSuccessAction {
   type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_SUCCESS;
-  payload: {
-    updateAttackPayload: UpdateAttackOptionsPayload;
-    isInitial: boolean; // want update and continue in server.
-  };
+  payload: UpdateAttackOptionsPayload;
 }
 
 // After update failed.
 export interface UpdateAttackOptionsFailedAction {
   type: AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_FAILED;
+}
+
+export interface SetSelectedHostAttackOptionsAction {
+  type: AttackProcessActionTypes.SET_SELECTED_HOST_OPEN_OPTIONS;
+  payload: Host | undefined;
 }
 
 export type AttackProcessAction =
@@ -216,4 +217,5 @@ export type AttackProcessAction =
   | AddAttackOptionsAction
   | UpdateAttackOptionsPendingAction
   | UpdateAttackOptionsFailedAction
-  | UpdateAttackOptionsSuccessAction;
+  | UpdateAttackOptionsSuccessAction
+  | SetSelectedHostAttackOptionsAction;

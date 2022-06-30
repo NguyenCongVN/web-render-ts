@@ -12,9 +12,9 @@ import { Vulnerbility } from "../../utils/classes/Vulnerbility";
 import { Service } from "../../utils/classes/Service";
 import Checkbox from "@mui/material/Checkbox";
 import { Box, FormControlLabel } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { bindActionCreators } from "@reduxjs/toolkit";
-import { hostActionCreators } from "../../redux";
+import { attackProcessActionCreators, hostActionCreators } from "../../redux";
 import { AttackOption, AttackOptions, Host } from "../../utils/classes/Host";
 import clone from "clone";
 import { NfsMounted } from "../../utils/classes/NsfMounted";
@@ -24,6 +24,7 @@ import { SelectType } from "../../utils/enums/TypeSelect";
 import { TypeExploit } from "../../utils/enums/TypeExploit";
 import { AccessTypes } from "../../utils/enums/AccessTypes";
 import { BlackListDirection } from "../../utils/classes/Host";
+import { RootState } from "../../redux/reducers/RootReducer";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -41,6 +42,10 @@ export default function FormDialog({
 }: Props) {
   const dispatch = useDispatch();
 
+  const attackProcessState = useSelector(
+    (state: RootState) => state.attackProcess
+  );
+
   const {
     addVulnerbilityPending,
     addServicePending,
@@ -48,6 +53,11 @@ export default function FormDialog({
     addNfsExportedPending,
     addBlackDirectionPending,
   } = bindActionCreators(hostActionCreators, dispatch);
+
+  const { updateAttackOptionsPending } = bindActionCreators(
+    attackProcessActionCreators,
+    dispatch
+  );
 
   const handleClose = () => {
     setOpen(false);
@@ -482,6 +492,7 @@ export default function FormDialog({
                   margin="dense"
                   id={attackOption.name}
                   label={attackOption.name}
+                  value={attackOption.value}
                   type="text"
                   fullWidth
                   variant="standard"
@@ -489,19 +500,18 @@ export default function FormDialog({
                     setDataUpdate(() => {
                       if (property === NodeProperties.AttackOptions) {
                         if (dataUpdate) {
-                          let attackOptionFound = dataUpdate.value.find(
-                            (attackOptionFound) =>
-                              attackOptionFound.name === attackOption.name
-                          );
-
-                          if (attackOptionFound) {
-                            attackOptionFound.value = e.target.value;
-                            dataUpdate.value = [
-                              ...dataUpdate.value,
-                              attackOptionFound,
-                            ];
+                          let dataUpdateReRender = clone(dataUpdate);
+                          for (let i = 0; i < dataUpdate.value.length; i++) {
+                            if (
+                              dataUpdateReRender.value[i].name ===
+                              attackOption.name
+                            ) {
+                              dataUpdateReRender.value[i].value =
+                                e.target.value;
+                              break;
+                            }
                           }
-                          return dataUpdate;
+                          return dataUpdateReRender;
                         }
                       }
                     });
@@ -580,9 +590,20 @@ export default function FormDialog({
                 }
 
                 // Attack Options
-
                 if (property === NodeProperties.AttackOptions) {
-                  if (dataUpdate) {
+                  if (dataUpdate && dataUpdate.type === "AttackOptions") {
+                    // Update to store
+                    dataUpdate.value.forEach((attackOption) => {
+                      updateAttackOptionsPending({
+                        hostLabel: host.label.text,
+                        name: attackOption.name,
+                        value: attackOption.value,
+                        isInitial: attackProcessState.isInitalAddAttackOptions
+                          ? attackProcessState.isInitalAddAttackOptions
+                          : false,
+                        moduleName: attackOption.moduleName,
+                      });
+                    });
                   }
                 }
               }

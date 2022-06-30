@@ -18,6 +18,8 @@ import { setLinks } from "../../redux/action-creators/Link.creators";
 import clone from "clone";
 import AttackProcess from "../AttackProcess/AttackProcess";
 import AttackPathNetwork from "../AttackPath/AttackPath";
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { attackProcessActionCreators } from "../../redux";
 interface NetworkProps {
   topologyInput: Topology | undefined;
 }
@@ -29,6 +31,11 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
     (state: RootState) => state.attackProcess
   );
   const dispatch = useDispatch();
+
+  const { setSelectedHostAttackOptions } = bindActionCreators(
+    attackProcessActionCreators,
+    dispatch
+  );
 
   const [selectedHost, setSelectedHost] = useState<Host | undefined>(undefined);
 
@@ -178,10 +185,14 @@ const VisNetwork = ({ topologyInput }: NetworkProps) => {
       // Event in network
       network.current?.on("select", (e) => {
         setSelectedHost(getNodeFromId(e.nodes[0]));
+
+        // set selected host to open attack options to toogle.
+        setSelectedHostAttackOptions(getNodeFromId(e.nodes[0]));
       });
 
       network.current?.on("deselectNode", (e) => {
         setSelectedHost(undefined);
+        setSelectedHostAttackOptions(undefined);
       });
     }
     reload();

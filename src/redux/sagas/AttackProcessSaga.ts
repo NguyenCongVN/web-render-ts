@@ -41,6 +41,8 @@ import {
   SendCommandPayload,
   StartAttackPendingPayload,
   SuccessCommandPayload,
+  UpdateAttackOptionsPayload,
+  UpdateAttackOptionsInitPayload,
 } from "../payload-types/AttackProcessPayloadTypes";
 import {
   AttackProcessState,
@@ -53,6 +55,7 @@ import { convertLabel } from "../../utils/file_utils/StringUtil";
 import { CommandType } from "../../utils/enums/CommandType";
 import clone from "clone";
 import { v1 as uuidv1 } from "uuid";
+import { updateHostSuccess } from "../action-creators/Host.creators";
 
 export const getAttackProcesses = (state: RootState) =>
   state.attackProcess.processes;
@@ -595,8 +598,6 @@ function* watchOnStopAttack() {
 function* onAddAttackOptions({ payload }: AddAttackOptionsAction): any {
   try {
     // add default data. ""
-    console.log("asdsa");
-
     // check payload hostlabel is not empty
     if (payload.hostLabel) {
       // find host with label
@@ -607,7 +608,7 @@ function* onAddAttackOptions({ payload }: AddAttackOptionsAction): any {
       let hostClone = clone(hostState);
 
       for (let i = 0; i < hostClone.length; i++) {
-        if (hostClone[i].label.text === payload.hostLabel) {
+        if (convertLabel(hostClone[i].label.text) === payload.hostLabel) {
           // set selected host to add attack options
           attackProcessState.selectedHostToAddAttackOptions = hostClone[i];
 
@@ -622,6 +623,7 @@ function* onAddAttackOptions({ payload }: AddAttackOptionsAction): any {
             hostClone[i].AttackOptions.value.push({
               name: payload.name,
               value: "",
+              moduleName: payload.moduleName,
             });
             hostState = hostClone; // Update and re-render value.
           }
@@ -643,22 +645,29 @@ function* watchOnAddAttackOption() {
 }
 
 //
-function* onUpdateAttackOptions({ payload }: UpdateAttackOptionsPendingAction) {
+function* onUpdateAttackOptions({
+  payload,
+}: UpdateAttackOptionsPendingAction): any {
   try {
     // update
     // check payload hostlabel is not empty
-    if (payload.updateAttackPayload.hostLabel) {
+    if (payload.hostLabel) {
       // find host with label
       let hostState: Host[] = yield select(getHostStates);
+      let attackProcessState: AttackProcessState = yield select(
+        getAttackProcessState
+      );
       let hostClone = clone(hostState);
 
       for (let i = 0; i < hostClone.length; i++) {
-        if (hostClone[i].label.text === payload.updateAttackPayload.hostLabel) {
+        if (hostClone[i].label.text === payload.hostLabel) {
           hostClone[i].AttackOptions.value.push({
-            name: payload.updateAttackPayload.name,
-            value: "",
+            name: payload.name,
+            value: payload.value,
+            moduleName: payload.moduleName,
           });
-          hostState = hostClone; // Update and re-render value.
+          yield put(updateHostSuccess(hostClone));
+          attackProcessState.selectedHostToAddAttackOptions = hostClone[i];
           break;
         }
       }
@@ -666,17 +675,19 @@ function* onUpdateAttackOptions({ payload }: UpdateAttackOptionsPendingAction) {
     // check if is inital
     if (payload.isInitial) {
       // socket emit the update and continue attacking
-      socket.emit(
-        SocketEvents.ADD_ATTACK_OPTION_AND_CONTINUE,
-        payload.updateAttackPayload
-      );
+      socket.emit(SocketEvents.ADD_ATTACK_OPTION_AND_CONTINUE, {
+        ...payload,
+        hostLabel: convertLabel(payload.hostLabel),
+        moduleName: payload.moduleName,
+      });
       console.log("emit add attack option and continue");
     } else {
       // socket emit the update not have to remusing attacking.
-      socket.emit(
-        SocketEvents.UPDATE_ATTACK_OPTION,
-        payload.updateAttackPayload
-      );
+      socket.emit(SocketEvents.UPDATE_ATTACK_OPTION, {
+        ...payload,
+        hostLabel: convertLabel(payload.hostLabel),
+        moduleName: payload.moduleName,
+      });
       console.log("emit add attack option");
     }
   } catch (err) {}

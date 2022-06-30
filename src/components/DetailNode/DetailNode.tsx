@@ -8,7 +8,7 @@ import CollapseInputText from "../CollapseInputText/CollapseInputText";
 import { Host } from "../../utils/classes/Host";
 import clone from "clone";
 import { bindActionCreators } from "@reduxjs/toolkit";
-import { hostActionCreators } from "../../redux";
+import { attackProcessActionCreators, hostActionCreators } from "../../redux";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 
@@ -27,6 +27,11 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
   const dispatch = useDispatch();
   const { updateDraftHostPending } = bindActionCreators(
     hostActionCreators,
+    dispatch
+  );
+
+  const { toogleAddAttackOptions } = bindActionCreators(
+    attackProcessActionCreators,
     dispatch
   );
 
@@ -60,6 +65,16 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
           sx={{ bgcolor: "grey.A100", display: "flex" }}
         >
           Thuộc tính
+          <Button
+            sx={{ margin: "auto 0 auto auto", height: "70%" }}
+            size="small"
+            variant="outlined"
+            onClick={() => {
+              toogleAddAttackOptions({ isInital: false });
+            }}
+          >
+            Tùy chọn tấn công
+          </Button>
           <Button
             sx={{ margin: "auto 0 auto auto", height: "70%" }}
             size="small"
@@ -157,8 +172,6 @@ export default function DetailNode({ hostInput }: NodeDetailProps) {
             isCollapse
           />
         ) : null}
-
-        
       </Collapse>
     </List>
   );

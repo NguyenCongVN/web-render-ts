@@ -15,6 +15,7 @@ export class BlackListDirection {
 export class AttackOption {
   name: string = "";
   value: string = "";
+  moduleName: string = "";
 }
 
 export class AttackOptions {

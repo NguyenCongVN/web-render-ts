@@ -113,7 +113,14 @@ const attackProcessReducer = (
         askAddAttackOptions: !state.askAddAttackOptions,
         isInitalAddAttackOptions: action.payload.isInital,
       };
+    case AttackProcessActionTypes.SET_SELECTED_HOST_OPEN_OPTIONS:
+      return {
+        ...state,
+        selectedHostToAddAttackOptions : action.payload
+      }
     case AttackProcessActionTypes.ADD_ATTACK_OPTIONS_PENDING: // update in saga.
+      return state;
+    case AttackProcessActionTypes.UPDATE_ATTACK_OPTIONS_PENDING: // update in saga.
       return state;
     case AttackProcessActionTypes.START_ATTACK_PENDING:
       return {

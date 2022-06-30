@@ -158,6 +158,16 @@ const CollapseInputText = ({ property, isCollapse, data }: Props) => {
         </ListItemButton>
       ));
     }
+
+    if (property === NodeProperties.AttackOptions) {
+      return data.AttackOptions.value.map((attackOption) => (
+        <ListItemButton sx={{ pl: 4 }}>
+          <ListItemText
+            primary={`${attackOption.name}: ${attackOption.value}`}
+          />
+        </ListItemButton>
+      ));
+    }
   };
 
   // Form to add and edit
